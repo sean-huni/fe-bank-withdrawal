@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import { RequireSession } from './components/RequireSession'
+import { AuthenticatedLayout } from './components/AuthenticatedLayout'
 import { Welcome } from './screens/Welcome'
 import { Pin } from './screens/Pin'
 import { Menu } from './screens/Menu'
@@ -14,7 +14,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/pin" element={<Pin />} />
-      <Route element={<RequireSession />}>
+      <Route element={<AuthenticatedLayout />}>
         <Route path="/menu" element={<Menu />} />
         <Route path="/balance" element={<Balance />} />
         <Route path="/withdraw" element={<Withdraw />} />

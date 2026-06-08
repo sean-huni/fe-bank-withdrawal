@@ -1,11 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { ScreenFrame } from '../components/ScreenFrame'
 import { useSessionStore } from '../stores/sessionStore'
-import { useSessionTimeout } from '../hooks/useSessionTimeout'
 import { useT } from '../i18n/strings'
 
 export function Menu() {
-  useSessionTimeout()
   const t = useT()
   const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)
