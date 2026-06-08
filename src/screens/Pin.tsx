@@ -53,6 +53,9 @@ export function Pin() {
         onBackspace={() => setPin((p) => p.slice(0, -1))}
         onEnter={enter}
       />
+      <p className="text-center text-xs text-slate-500 mt-4">
+        demo PIN 1234 · type on keypad or keyboard
+      </p>
     </ScreenFrame>
   )
 }
