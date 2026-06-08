@@ -1,7 +1,9 @@
 # 🏧 fe-bank-withdrawal
 
 An ATM-styled React SPA for the [`bank-withdrawal`](../../../be/java/spring/bank-withdrawal)
-API: insert card → PIN → balance → withdraw → deposit → mini-statement → receipt. Emoji-forward
+API: card → PIN → balance → withdraw → deposit → mini-statement → receipt. Login **auto-submits** —
+the card is looked up the instant a valid 16-digit Luhn number is entered, and the PIN is
+**server-verified** the instant the 4th digit lands (no Insert/Enter press). Emoji-forward
 dark glassmorphism, idempotent transactions, EN/SN i18n, and OpenTelemetry → Grafana LGTM
 observability.
 
@@ -14,8 +16,9 @@ Library · Playwright.
 ## Prerequisites
 
 - **Node 22** (see `.nvmrc`) — `nvm use`.
-- The **`bank-withdrawal` backend** running on `http://localhost:8080` with the card-lookup
-  endpoint (`GET /api/v1/cards/{cardNumber}`). Start its `docker compose up` for the database
+- The **`bank-withdrawal` backend** running on `http://localhost:8080` with the two-phase auth
+  endpoints — card lookup (`GET /api/v1/cards/{cardNumber}`, greeting only, no balance) and PIN
+  verify (`POST /api/v1/cards/{cardNumber}/pin`). Start its `docker compose up` for the database
   and the Grafana LGTM observability stack.
 
 ## Quick start
@@ -37,9 +40,13 @@ npm install            # (npm run setup already did this)
 npm run dev            # http://localhost:5173 — proxies /api → :8080 (no CORS)
 ```
 
-Open `http://localhost:5173`, enter a demo card, then the **demo PIN `1234`** (any 4 digits
-work — the PIN is cosmetic). The PIN keypad accepts both **touch/click** and **keyboard** input
-(hardware or Bluetooth): digits `0`–`9`, `Backspace`, and `Enter`.
+Open `http://localhost:5173` and type a demo card number — login **auto-submits** the moment a
+valid 16-digit Luhn number is entered (no Insert press), greeting you by name. Then type the
+**demo PIN `1234`**, which is **server-verified**: authentication fires automatically the instant
+the 4th digit lands (no Enter press), and a wrong PIN shows an error and clears for a retry. The
+**balance is revealed only after the PIN is verified** — the card lookup returns a greeting only.
+The PIN keypad accepts both **touch/click** and **keyboard** input (hardware or Bluetooth):
+digits `0`–`9`, `Backspace`, and `Enter`.
 
 ## Scripts
 
@@ -81,10 +88,12 @@ The backend seeds two demo accounts. Card numbers are Luhn-valid and friendly (n
 | Alice  | `4539 1488 0343 6467` |
 | Bob    | `6011 0009 9013 9424` |
 
-The **PIN is cosmetic** — any 4 digits proceed (this is a demo, not an auth system). After the
-PIN, the card is remembered locally (Zustand `persist`) and appears as a tap-to-use tile on the
-Welcome screen. In dev, the bottom **dev banner** shows the live signed-in holder and masked
-card, plus links to Grafana, Prometheus and Swagger.
+The **demo PIN is `1234`** and is **verified server-side** (`POST /cards/{n}/pin`) — a wrong PIN
+returns `401 PIN_INVALID`, surfaced as an inline error before clearing for a retry. After a
+successful verify, the card is remembered locally (Zustand `persist`) and appears as a tap-to-use
+tile on the Welcome screen; the authenticated balance is held in the session and patched after
+each transaction (no balance refetch). In dev, the bottom **dev banner** shows the live signed-in
+holder and masked card, plus links to Grafana, Prometheus and Swagger.
 
 ## Internationalisation
 
@@ -102,6 +111,7 @@ review (consistent with the backend message bundle).
   (`src/telemetry/index.ts`):
   - `atm_session_started_total`
   - `atm_card_lookup_total{result}` (`success` / `not_found` / `error`)
+  - `atm_pin_verify_total{result}` (`success` / `invalid` / `error`) — the PIN value is never a label
   - `atm_balance_inquiry_total`
   - `atm_withdrawal_total{result}` (`success` / `insufficient_funds` / `error`)
   - `atm_deposit_total{result}` (`success` / `error`)
@@ -123,16 +133,18 @@ totals, and a Web Vitals p95 panel.
 
 ## Architecture
 
-A guarded screen state-machine on React Router. Zustand holds the session and saved cards
-(localStorage); TanStack Query owns server state; Axios injects `Accept-Language` and a
-per-operation `Idempotency-Key` (created once per withdraw/deposit operation, reused on retry).
+A guarded screen state-machine on React Router. Zustand holds the session — including the
+authenticated balance, set at PIN verify and patched after each transaction — plus the saved
+cards (localStorage); TanStack Query owns the lookup/verify/transaction mutations and statement
+query; Axios injects `Accept-Language` and a per-operation `Idempotency-Key` (created once per
+withdraw/deposit operation, reused on retry).
 Errors are branched on the backend `error.code`, mapped to friendly emoji messages
 (`src/lib/errorMap.ts`) and surfaced as toasts.
 
 ## Testing
 
 ```bash
-npm run test          # Vitest (Luhn, currency, error map, cards store, Withdraw component)
+npm run test          # Vitest (Luhn, currency, error map, cards & session stores, Pin + Withdraw components)
 npm run e2e           # Playwright mocked happy path (e2e/atm.spec.ts)
 ```
 
