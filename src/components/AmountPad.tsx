@@ -1,6 +1,16 @@
 import { QUICK_CASH } from '../config/quickCash'
 import { Money } from './Money'
 
+/** Keep only digits and a single decimal point with at most 2 fraction digits. */
+function sanitizeAmount(raw: string): string {
+  const cleaned = raw.replace(/[^\d.]/g, '')
+  const firstDot = cleaned.indexOf('.')
+  if (firstDot === -1) return cleaned
+  const intPart = cleaned.slice(0, firstDot)
+  const fracPart = cleaned.slice(firstDot + 1).replace(/\./g, '').slice(0, 2)
+  return `${intPart}.${fracPart}`
+}
+
 export function AmountPad({
   value,
   onChange,
@@ -36,7 +46,7 @@ export function AmountPad({
           value={value}
           inputMode="decimal"
           placeholder="0.00"
-          onChange={(e) => onChange(e.target.value.replace(/[^\d.]/g, ''))}
+          onChange={(e) => onChange(sanitizeAmount(e.target.value))}
           className="glass w-full p-4 mt-1 font-mono text-lg tabular-nums"
         />
       </label>

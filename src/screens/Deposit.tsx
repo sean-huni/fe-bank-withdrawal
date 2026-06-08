@@ -6,6 +6,7 @@ import { AmountPad } from '../components/AmountPad'
 import { useDeposit } from '../hooks/useDeposit'
 import { useSessionStore } from '../stores/sessionStore'
 import { fromAxios, mapError } from '../lib/errorMap'
+import { parseAmount } from '../lib/validation'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
 
@@ -17,8 +18,9 @@ export function Deposit() {
   const deposit = useDeposit() // creates one idempotency key for this screen instance
 
   async function confirm() {
-    if (!amount || Number(amount) <= 0) {
-      toast.error('✋ Enter an amount')
+    const parsed = parseAmount(amount)
+    if (!parsed.success) {
+      toast.error(`✋ ${parsed.error.issues[0].message}`)
       return
     }
     try {

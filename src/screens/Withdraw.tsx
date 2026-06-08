@@ -6,6 +6,7 @@ import { AmountPad } from '../components/AmountPad'
 import { useWithdraw } from '../hooks/useWithdraw'
 import { useSessionStore } from '../stores/sessionStore'
 import { fromAxios, mapError } from '../lib/errorMap'
+import { parseAmount } from '../lib/validation'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
 
@@ -17,8 +18,14 @@ export function Withdraw() {
   const withdraw = useWithdraw() // creates one idempotency key for this screen instance
 
   async function confirm() {
-    if (!amount || Number(amount) <= 0) {
-      toast.error('✋ Enter an amount')
+    const parsed = parseAmount(amount)
+    if (!parsed.success) {
+      toast.error(`✋ ${parsed.error.issues[0].message}`)
+      return
+    }
+    // client-side pre-check for a friendly message; the server stays the source of truth.
+    if (Number(amount) > Number(account.balance)) {
+      toast.error('💸 Not enough funds')
       return
     }
     try {
