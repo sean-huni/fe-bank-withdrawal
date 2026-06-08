@@ -20,19 +20,32 @@ Library · Playwright.
 
 ## Quick start
 
+First time on a fresh machine, bootstrap the toolchain (installs the latest Node LTS via
+`nvm`, pins it into `.nvmrc`, then installs deps + Playwright chromium — idempotent, safe to
+re-run):
+
 ```bash
-nvm use                # Node 22
+npm run setup          # or: bash scripts/setup-env.sh
+```
+
+Then run the app:
+
+```bash
+nvm use                # Node from .nvmrc
 cp .env.example .env   # 12-factor config; .env is gitignored
-npm install
+npm install            # (npm run setup already did this)
 npm run dev            # http://localhost:5173 — proxies /api → :8080 (no CORS)
 ```
 
-Open `http://localhost:5173`, enter a demo card, any 4-digit PIN, and explore.
+Open `http://localhost:5173`, enter a demo card, then the **demo PIN `1234`** (any 4 digits
+work — the PIN is cosmetic). The PIN keypad accepts both **touch/click** and **keyboard** input
+(hardware or Bluetooth): digits `0`–`9`, `Backspace`, and `Enter`.
 
 ## Scripts
 
 | Script              | Purpose                                          |
 | ------------------- | ------------------------------------------------ |
+| `npm run setup`     | Bootstrap toolchain: Node LTS via nvm + deps     |
 | `npm run dev`       | Vite dev server with `/api` proxy to the backend |
 | `npm run build`     | `tsc -b && vite build` → `dist/`                 |
 | `npm run preview`   | Serve the production build                        |
