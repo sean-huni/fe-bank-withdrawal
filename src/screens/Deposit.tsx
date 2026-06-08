@@ -23,11 +23,14 @@ export function Deposit() {
       toast.error(`✋ ${parsed.error.issues[0].message}`)
       return
     }
+    const startedAt = performance.now()
     try {
       const tx = await deposit.mutateAsync({ accountId: account.accountId, amount })
       atmMetrics.deposit('success')
+      atmMetrics.txnDuration('deposit', performance.now() - startedAt)
       navigate('/receipt', { state: { tx, kind: 'deposit' } })
     } catch (err) {
+      atmMetrics.txnDuration('deposit', performance.now() - startedAt)
       const { status, error } = fromAxios(err)
       atmMetrics.deposit('error')
       const m = mapError(status, error)

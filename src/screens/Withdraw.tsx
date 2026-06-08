@@ -28,11 +28,14 @@ export function Withdraw() {
       toast.error('💸 Not enough funds')
       return
     }
+    const startedAt = performance.now()
     try {
       const tx = await withdraw.mutateAsync({ accountId: account.accountId, amount })
       atmMetrics.withdrawal('success')
+      atmMetrics.txnDuration('withdraw', performance.now() - startedAt)
       navigate('/receipt', { state: { tx, kind: 'withdraw' } })
     } catch (err) {
+      atmMetrics.txnDuration('withdraw', performance.now() - startedAt)
       const { status, error } = fromAxios(err)
       atmMetrics.withdrawal(status === 422 ? 'insufficient_funds' : 'error')
       const m = mapError(status, error)
