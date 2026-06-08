@@ -31,6 +31,8 @@ export function Pin() {
     try {
       const account = await verify.mutateAsync({ cardNumber, pin: entered })
       atmMetrics.pinVerify('success')
+      atmMetrics.sessionStarted() // a verified PIN is the true start of an ATM session
+
       if (!cards.some((c) => c.cardNumber === cardNumber)) save(cardNumber, account.holderName)
       signIn(account, cardNumber)
       navigate('/menu')
