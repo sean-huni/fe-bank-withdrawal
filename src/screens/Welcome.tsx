@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { ScreenFrame } from '../components/ScreenFrame'
@@ -16,27 +16,33 @@ export function Welcome() {
   const navigate = useNavigate()
   const [value, setValue] = useState('')
   const lookup = useCardLookup()
-  const signIn = useSessionStore((s) => s.signIn)
+  const setPending = useSessionStore((s) => s.setPending)
   const cards = useCardsStore((s) => s.cards)
+  const submittedFor = useRef<string | null>(null)
 
   async function insert(cardRaw: string) {
     const card = normalizeCard(cardRaw)
-    if (!isValidCardNumber(card)) {
-      toast.error('💳 Invalid card number')
-      return
-    }
+    if (!isValidCardNumber(card) || submittedFor.current === card || lookup.isPending) return
+    submittedFor.current = card
     try {
-      const account = await lookup.mutateAsync(card)
+      const summary = await lookup.mutateAsync(card)
       atmMetrics.cardLookup('success')
-      signIn(account, card)
+      setPending(card, summary.holderName)
       navigate('/pin')
     } catch (err) {
       const { status, error } = fromAxios(err)
       atmMetrics.cardLookup(status === 404 ? 'not_found' : 'error')
       const m = mapError(status, error)
       toast.error(`${m.emoji} ${m.title}`)
+      submittedFor.current = null // allow retry
     }
   }
+
+  // Auto-submit the instant a valid 16-digit Luhn number is present (typed or pasted).
+  useEffect(() => {
+    if (isValidCardNumber(normalizeCard(value))) void insert(value)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
 
   return (
     <ScreenFrame title={`🏧 ${t('welcome')}`}>
@@ -54,7 +60,7 @@ export function Welcome() {
         disabled={lookup.isPending}
         onClick={() => insert(value)}
       >
-        💳 Insert card
+        💳 {t('insertCard')}
       </button>
       {cards.length > 0 && <p className="text-slate-400 text-sm mb-2">{t('yourCards')}</p>}
       <div className="space-y-2">
