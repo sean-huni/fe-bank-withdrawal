@@ -29,10 +29,19 @@ describe('Pin', () => {
     await waitFor(() => expect(spy).toHaveBeenCalledWith('4539148803436467', '1234'))
   })
 
-  it('shows an error and clears on a wrong PIN (401)', async () => {
-    vi.spyOn(atm, 'verifyPin').mockRejectedValue({ response: { status: 401, data: { error: { code: 'PIN_INVALID', message: 'Incorrect PIN' } } } })
+  it('shows an error and clears the PIN dots on a wrong PIN (401), re-arming for retry', async () => {
+    const spy = vi.spyOn(atm, 'verifyPin').mockRejectedValue({ response: { status: 401, data: { error: { code: 'PIN_INVALID', message: 'Incorrect PIN' } } } })
     renderPin()
     await userEvent.keyboard('9999')
     await waitFor(() => expect(screen.getByText(/incorrect pin/i)).toBeInTheDocument())
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(1))
+
+    // PIN entry reset: no filled dots remain after the failed attempt.
+    const filled = screen.getByLabelText('PIN entry').querySelectorAll('.bg-accent-cyan')
+    expect(filled).toHaveLength(0)
+
+    // Re-armed: a second 4-digit entry triggers verifyPin again.
+    await userEvent.keyboard('1234')
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(2))
   })
 })
