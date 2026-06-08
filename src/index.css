@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-500: #1890FF;
+  --color-accent-cyan: #00D9FF;
+  --color-accent-purple: #8B5CF6;
+  --color-surface-950: #020617;
+  --color-surface-900: #0F172A;
+  --color-surface-800: #1E293B;
+  --color-surface-700: #334155;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+body { @apply bg-surface-950 text-slate-100 font-sans; }
+.glass { @apply bg-surface-800/50 backdrop-blur-xl border border-surface-700/50 rounded-2xl; }
