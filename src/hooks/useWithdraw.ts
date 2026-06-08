@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { withdraw } from '../api/atm'
 import { newIdempotencyKey } from '../lib/idempotency'
@@ -7,8 +8,7 @@ import { useSessionStore } from '../stores/sessionStore'
 export function useWithdraw() {
   const patch = usePatchBalance()
   const cardNumber = useSessionStore.getState().cardNumber as string
-  // one key per hook instance == one logical operation; React Query retries reuse it
-  const idempotencyKey = newIdempotencyKey()
+  const [idempotencyKey] = useState(newIdempotencyKey) // created once, stable across renders & retries
   return useMutation({
     mutationFn: (vars: { accountId: string; amount: string }) =>
       withdraw(vars.accountId, vars.amount, idempotencyKey),
