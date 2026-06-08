@@ -1,73 +1,131 @@
-# React + TypeScript + Vite
+# 🏧 fe-bank-withdrawal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An ATM-styled React SPA for the [`bank-withdrawal`](../../../be/java/spring/bank-withdrawal)
+API: insert card → PIN → balance → withdraw → deposit → mini-statement → receipt. Emoji-forward
+dark glassmorphism, idempotent transactions, EN/SN i18n, and OpenTelemetry → Grafana LGTM
+observability.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+React 19 · TypeScript · Vite · Tailwind 4 · TanStack Query 5 · Zustand 5 · Axios · React Hook
+Form + Zod · framer-motion · react-hot-toast · OpenTelemetry (web) · Vitest + React Testing
+Library · Playwright.
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Node 22** (see `.nvmrc`) — `nvm use`.
+- The **`bank-withdrawal` backend** running on `http://localhost:8080` with the card-lookup
+  endpoint (`GET /api/v1/cards/{cardNumber}`). Start its `docker compose up` for the database
+  and the Grafana LGTM observability stack.
 
-## Expanding the ESLint configuration
+## Quick start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+nvm use                # Node 22
+cp .env.example .env   # 12-factor config; .env is gitignored
+npm install
+npm run dev            # http://localhost:5173 — proxies /api → :8080 (no CORS)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open `http://localhost:5173`, enter a demo card, any 4-digit PIN, and explore.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Script              | Purpose                                          |
+| ------------------- | ------------------------------------------------ |
+| `npm run dev`       | Vite dev server with `/api` proxy to the backend |
+| `npm run build`     | `tsc -b && vite build` → `dist/`                 |
+| `npm run preview`   | Serve the production build                        |
+| `npm run test`      | Vitest unit/component suite (run once)            |
+| `npm run test:watch`| Vitest in watch mode                             |
+| `npm run typecheck` | `tsc --noEmit` type gate                          |
+| `npm run lint`      | ESLint                                            |
+| `npm run e2e`       | Playwright E2E (mocked happy path)               |
+
+## 12-factor configuration
+
+All runtime config is read once from `import.meta.env` (`src/config/env.ts`). Set values via
+`.env` (gitignored) or real environment variables — never commit secrets. Vite only exposes
+variables prefixed `VITE_`. Precedence: process environment overrides `.env`; each var falls
+back to the default below if unset.
+
+| Variable               | Default                               | Meaning                                                              |
+| ---------------------- | ------------------------------------- | ------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`    | `/api`                                | Base path for API calls (proxied to the backend in dev).            |
+| `VITE_API_VERSION`     | `v1`                                  | API version segment; combined as `${base}/${version}`.              |
+| `VITE_OTLP_BASE_URL`   | `http://localhost:4318`               | OTLP/HTTP collector base; traces → `/v1/traces`, metrics → `/v1/metrics`. |
+| `VITE_GRAFANA_URL`     | `http://localhost:3000`               | Grafana link in the dev banner.                                     |
+| `VITE_PROMETHEUS_URL`  | `http://localhost:9090`               | Prometheus link in the dev banner.                                  |
+| `VITE_SWAGGER_URL`     | `http://localhost:8080/swagger-ui.html` | Backend OpenAPI/Swagger link in the dev banner.                   |
+| `VITE_PROXY_TARGET`    | `http://localhost:8080`               | Dev-only Vite proxy target for `/api` (see `vite.config.ts`).       |
+
+## Demo cards (seeded)
+
+The backend seeds two demo accounts. Card numbers are Luhn-valid and friendly (no UUIDs):
+
+| Holder | Card number           |
+| ------ | --------------------- |
+| Alice  | `4539 1488 0343 6467` |
+| Bob    | `6011 0009 9013 9424` |
+
+The **PIN is cosmetic** — any 4 digits proceed (this is a demo, not an auth system). After the
+PIN, the card is remembered locally (Zustand `persist`) and appears as a tap-to-use tile on the
+Welcome screen. In dev, the bottom **dev banner** shows the live signed-in holder and masked
+card, plus links to Grafana, Prometheus and Swagger.
+
+## Internationalisation
+
+Toggle **EN / SN** (English / Shona) top-right; the choice persists and is sent to the backend
+as `Accept-Language` on every request. Shona strings are machine-drafted and pending native
+review (consistent with the backend message bundle).
+
+## Observability
+
+`initTelemetry()` (in `src/main.tsx`) wires browser OpenTelemetry:
+
+- **Traces** — document-load, `fetch` and `XMLHttpRequest` auto-instrumentation, exported via
+  OTLP/HTTP to `${VITE_OTLP_BASE_URL}/v1/traces`.
+- **Metrics** — exported to `${VITE_OTLP_BASE_URL}/v1/metrics` every 10s. Custom ATM counters
+  (`src/telemetry/index.ts`):
+  - `atm_session_started_total`
+  - `atm_card_lookup_total{result}` (`success` / `not_found` / `error`)
+  - `atm_balance_inquiry_total`
+  - `atm_withdrawal_total{result}` (`success` / `insufficient_funds` / `error`)
+  - `atm_deposit_total{result}` (`success` / `error`)
+  - `atm_web_vitals` histogram (CLS, INP, LCP, TTFB, FCP) via `web-vitals`.
+
+OTLP export failures are tolerated when no collector is running (dev still works).
+
+### Import the Grafana dashboard
+
+A ready-made dashboard lives at `observability/grafana/atm-frontend-dashboard.json`.
+
+1. Open Grafana (`http://localhost:3000`).
+2. **Dashboards → New → Import**.
+3. Upload `observability/grafana/atm-frontend-dashboard.json` (or paste its contents).
+4. Select your **Prometheus** datasource when prompted.
+
+Panels: sessions/5m, withdrawals by result, card lookups by result, deposit & balance-inquiry
+totals, and a Web Vitals p95 panel.
+
+## Architecture
+
+A guarded screen state-machine on React Router. Zustand holds the session and saved cards
+(localStorage); TanStack Query owns server state; Axios injects `Accept-Language` and a
+per-operation `Idempotency-Key` (created once per withdraw/deposit operation, reused on retry).
+Errors are branched on the backend `error.code`, mapped to friendly emoji messages
+(`src/lib/errorMap.ts`) and surfaced as toasts.
+
+## Testing
+
+```bash
+npm run test          # Vitest (Luhn, currency, error map, cards store, Withdraw component)
+npm run e2e           # Playwright mocked happy path (e2e/atm.spec.ts)
+```
+
+The `@live` smoke test (`e2e/live-smoke.spec.ts`) hits the real backend and is opt-in — it
+requires `bank-withdrawal` running with the card endpoint and a seeded card. Run it with:
+
+```bash
+npx playwright test e2e/live-smoke.spec.ts --grep @live
 ```
