@@ -19,6 +19,7 @@ function renderWithdraw() {
 }
 
 beforeEach(() => {
+  vi.restoreAllMocks()
   useSessionStore.setState({
     account: {
       accountId: 'acc-1',
@@ -46,5 +47,35 @@ describe('Withdraw', () => {
     await userEvent.click(screen.getByRole('button', { name: /50/ }))
     await userEvent.click(screen.getByRole('button', { name: /confirm/i }))
     await waitFor(() => expect(spy).toHaveBeenCalledWith('acc-1', '50', expect.any(String)))
+  })
+
+  it('reuses the SAME idempotency key across re-renders and repeated confirms', async () => {
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const spy = vi.spyOn(atm, 'withdraw').mockResolvedValue({
+      transactionId: 'tx-1',
+      accountId: 'acc-1',
+      type: 'DEBIT',
+      amount: '50',
+      balanceAfter: '950.00',
+      occurredAt: '2026-06-08T10:00:00Z',
+    })
+    renderWithdraw()
+    // Interact with the input twice (forces re-renders) before confirming the first time.
+    const input = screen.getByPlaceholderText('0.00')
+    await userEvent.type(input, '5')
+    await userEvent.type(input, '0')
+    await userEvent.click(screen.getByRole('button', { name: /confirm/i }))
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(1))
+
+    // Re-render via another input interaction, then confirm again.
+    await userEvent.clear(input)
+    await userEvent.type(input, '50')
+    await userEvent.click(screen.getByRole('button', { name: /confirm/i }))
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(2))
+
+    const firstKey = spy.mock.calls[0][2]
+    const secondKey = spy.mock.calls[1][2]
+    expect(firstKey).toMatch(UUID_RE)
+    expect(secondKey).toBe(firstKey)
   })
 })
