@@ -8,5 +8,12 @@ export default defineConfig({
     port: 5173,
     proxy: { '/api': { target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:8080', changeOrigin: true } },
   },
-  test: { environment: 'jsdom', globals: true, setupFiles: './src/test-setup.ts' },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test-setup.ts',
+    // Vitest owns src/*.test.tsx; Playwright owns e2e/*.spec.ts.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', 'e2e/**'],
+  },
 })
