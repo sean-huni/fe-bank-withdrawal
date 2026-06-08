@@ -4,6 +4,7 @@ export interface AtmError { emoji: string; title: string; detail: string; recove
 
 const BY_CODE: Record<string, Omit<AtmError, 'detail'>> = {
   CARD_NOT_FOUND: { emoji: '💳', title: 'Card not recognised', recoverable: true },
+  PIN_INVALID: { emoji: '🔒', title: 'Incorrect PIN', recoverable: true },
   ACCOUNT_NOT_FOUND: { emoji: '💳', title: 'Account unavailable', recoverable: true },
   INSUFFICIENT_FUNDS: { emoji: '💸', title: 'Not enough funds', recoverable: true },
   VALIDATION_FAILED: { emoji: '✋', title: 'Check the amount', recoverable: true },
