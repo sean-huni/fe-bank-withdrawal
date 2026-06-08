@@ -15,6 +15,7 @@ export function Pin() {
   const navigate = useNavigate()
   const cardNumber = useSessionStore((s) => s.pendingCardNumber)
   const holderName = useSessionStore((s) => s.pendingHolderName)
+  const account = useSessionStore((s) => s.account)
   const signIn = useSessionStore((s) => s.signIn)
   const cards = useCardsStore((s) => s.cards)
   const save = useCardsStore((s) => s.save)
@@ -51,8 +52,11 @@ export function Pin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin])
 
-  // No pending card — bounce to Welcome. (After all hooks, to keep hook order stable.)
-  if (!cardNumber) return <Navigate to="/" replace />
+  // No pending card and not yet authenticated — bounce to Welcome. (After all hooks, to
+  // keep hook order stable.) Once signIn clears the pending card, `account` is set and we
+  // let the imperative navigate('/menu') win instead of redirecting back to Welcome.
+  if (!cardNumber && !account) return <Navigate to="/" replace />
+  if (!cardNumber) return null
 
   return (
     <ScreenFrame title={`🔐 ${t('enterPin')}`}>
