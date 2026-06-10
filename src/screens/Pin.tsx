@@ -7,11 +7,13 @@ import { useSessionStore } from '../stores/sessionStore'
 import { useCardsStore } from '../stores/cardsStore'
 import { useVerifyPin } from '../hooks/useVerifyPin'
 import { fromAxios, mapError } from '../lib/errorMap'
+import { useLocaleStore } from '../stores/localeStore'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
 
 export function Pin() {
   const t = useT()
+  const locale = useLocaleStore((s) => s.locale)
   const navigate = useNavigate()
   const cardNumber = useSessionStore((s) => s.pendingCardNumber)
   const holderName = useSessionStore((s) => s.pendingHolderName)
@@ -39,7 +41,7 @@ export function Pin() {
     } catch (err) {
       const { status, error } = fromAxios(err)
       atmMetrics.pinVerify(status === 401 ? 'invalid' : 'error')
-      const m = mapError(status, error)
+      const m = mapError(status, error, locale)
       toast.error(`${m.emoji} ${m.title}`)
       setErrorMsg(m.detail || m.title)
       setPin('')

@@ -1,3 +1,5 @@
+// FE-OWN-DOMAIN strings only (labels/navigation). BE-originated messages derive
+// from src/i18n/generated/beMessages.ts (npm run i18n:gen).
 import { useLocaleStore } from '../stores/localeStore'
 
 const DICT = {

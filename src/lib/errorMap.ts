@@ -1,22 +1,30 @@
 import type { ApiError } from '../api/types'
+import { getBeMessage, type Locale } from '../i18n/generated/beMessages'
 
 export interface AtmError { emoji: string; title: string; detail: string; recoverable: boolean }
 
-const BY_CODE: Record<string, Omit<AtmError, 'detail'>> = {
-  CARD_NOT_FOUND: { emoji: '💳', title: 'Card not recognised', recoverable: true },
-  PIN_INVALID: { emoji: '🔒', title: 'Incorrect PIN', recoverable: true },
-  ACCOUNT_NOT_FOUND: { emoji: '💳', title: 'Account unavailable', recoverable: true },
-  INSUFFICIENT_FUNDS: { emoji: '💸', title: 'Not enough funds', recoverable: true },
-  VALIDATION_FAILED: { emoji: '✋', title: 'Check the amount', recoverable: true },
-  IDEMPOTENCY_CONFLICT: { emoji: '⏳', title: 'Already processing', recoverable: true },
+/** FE UX metadata per wire code — emoji + recoverability only.
+ *  Titles derive from the BE i18n bundle (src/i18n/generated/beMessages.ts). */
+const BY_CODE: Record<string, { emoji: string; recoverable: boolean }> = {
+  CARD_NOT_FOUND:        { emoji: '💳', recoverable: true },
+  PIN_INVALID:           { emoji: '🔒', recoverable: true },
+  ACCOUNT_NOT_FOUND:     { emoji: '💳', recoverable: true },
+  INSUFFICIENT_FUNDS:    { emoji: '💸', recoverable: true },
+  VALIDATION_FAILED:     { emoji: '✋', recoverable: true },
+  IDEMPOTENCY_CONFLICT:  { emoji: '⏳', recoverable: true },
 }
 
-export function mapError(status: number, error: ApiError | null): AtmError {
+export function mapError(status: number, error: ApiError | null, locale: Locale): AtmError {
   if (status === 0 || error === null) {
     return { emoji: '📡', title: "Can't reach the bank", detail: 'Please try again.', recoverable: true }
   }
-  const base = BY_CODE[error.code] ?? { emoji: '⚠️', title: 'Something went wrong', recoverable: false }
-  return { ...base, detail: error.message }
+  const meta = BY_CODE[error.code] ?? { emoji: '⚠️', recoverable: false }
+  // Title: use the BE-originated localized message from the generated catalogue.
+  // For wire codes with multiple variants (e.g. IDEMPOTENCY_CONFLICT), pass error.message
+  // so the catalogue can pick the exact variant; falls back to the catalogue's default
+  // en/sn when no variant matches. Falls back to error.message when code is unknown.
+  const title = getBeMessage(error.code, locale, error.message) ?? error.message
+  return { ...meta, title, detail: error.message }
 }
 
 /** Pull the {status, ApiError} out of an axios error for mapError. */
