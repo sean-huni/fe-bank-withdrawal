@@ -8,8 +8,10 @@ import { useCardsStore } from '../stores/cardsStore'
 import { useVerifyPin } from '../hooks/useVerifyPin'
 import { fromAxios, mapError } from '../lib/errorMap'
 import { useLocaleStore } from '../stores/localeStore'
+import { usePasskeyStore } from '../stores/passkeyStore'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
+import { hasPasskeyPromptBeenDismissed } from '../lib/passkeyPrompt'
 
 export function Pin() {
   const t = useT()
@@ -22,6 +24,8 @@ export function Pin() {
   const cards = useCardsStore((s) => s.cards)
   const save = useCardsStore((s) => s.save)
   const verify = useVerifyPin()
+  const passkeyAvailable = usePasskeyStore((s) => s.passkeyAvailable)
+  const passkeyEnrolled = usePasskeyStore((s) => s.passkeyEnrolled)
   const [pin, setPin] = useState('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const submitting = useRef(false)
@@ -37,7 +41,14 @@ export function Pin() {
 
       if (!cards.some((c) => c.cardNumber === cardNumber)) save(cardNumber, account.holderName)
       signIn(account, cardNumber)
-      navigate('/menu')
+
+      // Post-PIN: offer passkey enrollment once if device supports it and account
+      // doesn't have one yet, and user hasn't dismissed the prompt this session.
+      if (passkeyAvailable && !passkeyEnrolled && !hasPasskeyPromptBeenDismissed()) {
+        navigate('/enable-passkey')
+      } else {
+        navigate('/menu')
+      }
     } catch (err) {
       const { status, error } = fromAxios(err)
       atmMetrics.pinVerify(status === 401 ? 'invalid' : 'error')

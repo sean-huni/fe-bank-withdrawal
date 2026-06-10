@@ -4,11 +4,13 @@ import toast from 'react-hot-toast'
 import { ScreenFrame } from '../components/ScreenFrame'
 import { CardTile } from '../components/CardTile'
 import { useCardLookup } from '../hooks/useCardLookup'
+import { usePasskeyAvailability } from '../hooks/usePasskeyAvailability'
 import { isValidCardNumber, normalizeCard } from '../lib/luhn'
 import { fromAxios, mapError } from '../lib/errorMap'
 import { useSessionStore } from '../stores/sessionStore'
 import { useCardsStore } from '../stores/cardsStore'
 import { useLocaleStore } from '../stores/localeStore'
+import { usePasskeyStore } from '../stores/passkeyStore'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
 
@@ -21,6 +23,10 @@ export function Welcome() {
   const setPending = useSessionStore((s) => s.setPending)
   const cards = useCardsStore((s) => s.cards)
   const submittedFor = useRef<string | null>(null)
+
+  // Passkey availability — sets passkeyStore.passkeyAvailable once on mount
+  usePasskeyAvailability()
+  const passkeyAvailable = usePasskeyStore((s) => s.passkeyAvailable)
 
   async function insert(cardRaw: string) {
     const card = normalizeCard(cardRaw)
@@ -48,6 +54,18 @@ export function Welcome() {
 
   return (
     <ScreenFrame title={`🏧 ${t('welcome')}`}>
+      {/* Passkey button — primary CTA on return visits when platform authenticator available */}
+      {passkeyAvailable && (
+        <button
+          type="button"
+          aria-label={t('tapToAuth')}
+          className="glass w-full p-4 text-accent-cyan font-display text-lg mb-4 active:scale-95 transition"
+          onClick={() => navigate('/passkey-auth')}
+        >
+          🔐 {t('tapToAuth')}
+        </button>
+      )}
+
       <p className="text-slate-400 mb-3">{t('insertCard')}</p>
       <input
         value={value}

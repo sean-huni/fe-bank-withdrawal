@@ -8,12 +8,18 @@ import { Withdraw } from './screens/Withdraw'
 import { Deposit } from './screens/Deposit'
 import { Statement } from './screens/Statement'
 import { Receipt } from './screens/Receipt'
+import { PasskeyAuth } from './screens/PasskeyAuth'
+import { EnablePasskey } from './screens/EnablePasskey'
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Welcome />} />
       <Route path="/pin" element={<Pin />} />
+      {/* Passkey authentication — username-less discoverable credential flow */}
+      <Route path="/passkey-auth" element={<PasskeyAuth />} />
+      {/* Post-PIN passkey enrollment — one-time prompt, dismissible */}
+      <Route path="/enable-passkey" element={<EnablePasskey />} />
       <Route element={<AuthenticatedLayout />}>
         <Route path="/menu" element={<Menu />} />
         <Route path="/balance" element={<Balance />} />
