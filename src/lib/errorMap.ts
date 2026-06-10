@@ -14,14 +14,16 @@ const BY_CODE: Record<string, { emoji: string; recoverable: boolean }> = {
   IDEMPOTENCY_CONFLICT:  { emoji: '⏳', recoverable: true },
 }
 
-export function mapError(status: number, error: ApiError | null, locale: Locale = 'en'): AtmError {
+export function mapError(status: number, error: ApiError | null, locale: Locale): AtmError {
   if (status === 0 || error === null) {
     return { emoji: '📡', title: "Can't reach the bank", detail: 'Please try again.', recoverable: true }
   }
   const meta = BY_CODE[error.code] ?? { emoji: '⚠️', recoverable: false }
-  // Title: use the BE-originated localized message from the generated catalogue;
-  // fall back to the BE's wire message if the code is not in the catalogue.
-  const title = getBeMessage(error.code, locale) ?? error.message
+  // Title: use the BE-originated localized message from the generated catalogue.
+  // For wire codes with multiple variants (e.g. IDEMPOTENCY_CONFLICT), pass error.message
+  // so the catalogue can pick the exact variant; falls back to the catalogue's default
+  // en/sn when no variant matches. Falls back to error.message when code is unknown.
+  const title = getBeMessage(error.code, locale, error.message) ?? error.message
   return { ...meta, title, detail: error.message }
 }
 
