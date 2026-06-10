@@ -8,11 +8,13 @@ import { isValidCardNumber, normalizeCard } from '../lib/luhn'
 import { fromAxios, mapError } from '../lib/errorMap'
 import { useSessionStore } from '../stores/sessionStore'
 import { useCardsStore } from '../stores/cardsStore'
+import { useLocaleStore } from '../stores/localeStore'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
 
 export function Welcome() {
   const t = useT()
+  const locale = useLocaleStore((s) => s.locale)
   const navigate = useNavigate()
   const [value, setValue] = useState('')
   const lookup = useCardLookup()
@@ -32,7 +34,7 @@ export function Welcome() {
     } catch (err) {
       const { status, error } = fromAxios(err)
       atmMetrics.cardLookup(status === 404 ? 'not_found' : 'error')
-      const m = mapError(status, error)
+      const m = mapError(status, error, locale)
       toast.error(`${m.emoji} ${m.title}`)
       submittedFor.current = null // allow retry
     }

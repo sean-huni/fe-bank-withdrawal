@@ -6,12 +6,14 @@ import { AmountPad } from '../components/AmountPad'
 import { useWithdraw } from '../hooks/useWithdraw'
 import { useSessionStore } from '../stores/sessionStore'
 import { fromAxios, mapError } from '../lib/errorMap'
+import { useLocaleStore } from '../stores/localeStore'
 import { parseAmount } from '../lib/validation'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
 
 export function Withdraw() {
   const t = useT()
+  const locale = useLocaleStore((s) => s.locale)
   const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)!
   const [amount, setAmount] = useState<string>('')
@@ -38,7 +40,7 @@ export function Withdraw() {
       atmMetrics.txnDuration('withdraw', performance.now() - startedAt)
       const { status, error } = fromAxios(err)
       atmMetrics.withdrawal(status === 422 ? 'insufficient_funds' : 'error')
-      const m = mapError(status, error)
+      const m = mapError(status, error, locale)
       toast.error(`${m.emoji} ${m.title} — ${m.detail}`)
     }
   }
