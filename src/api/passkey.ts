@@ -4,7 +4,7 @@
  * All endpoint paths live here — a single place to diff against the BE contract.
  *
  * BE: Spring Security 7 built-in WebAuthn, session-cookie + CSRF (XSRF-TOKEN cookie).
- * The shared Axios client already has withCredentials + xsrf headers configured.
+ * Both axios instances already have withCredentials + xsrf headers configured (see client.ts).
  *
  * ============================================================================
  * ENDPOINT CONSTANTS (BE contract reference)
@@ -12,7 +12,8 @@
  *
  *  POST /api/{v}/atm/session
  *       body: { cardNumber, pin }
- *       200: { maskedCard, accountId, passkeyEnrolled }  — establishes HttpSession
+ *       200: ApiResponse<{ maskedCardNumber, accountId, passkeyEnrolled }>
+ *             — establishes HttpSession
  *       401: existing error shape (PIN_INVALID / CARD_NOT_FOUND)
  *
  *  POST /webauthn/register/options  (authenticated session)
@@ -35,8 +36,8 @@
  * ============================================================================
  */
 
-import { api } from './client'
-import { env } from '../config/env'
+import { api, ceremonyApi } from './client'
+import type { ApiResponse } from './types'
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
@@ -45,14 +46,13 @@ import type {
 } from '@simplewebauthn/browser'
 
 // ── Endpoint paths ──────────────────────────────────────────────────────────
-// All paths relative to axios baseURL (which is already /api/v1).
-// WebAuthn endpoints from Spring Security 7 are at the root context path
-// (not under /api/v1), so we use absolute paths with env.apiBaseUrl.
+// atmSession: bare relative path — api client already has /api/v1 as baseURL.
+// Ceremony paths: relative paths on ceremonyApi (baseURL = server origin).
 const EP = {
-  // Card+PIN session — sits under the versioned API namespace
-  atmSession: `${env.apiBaseUrl}/${env.apiVersion}/atm/session`,
+  // Card+PIN session — sits under the versioned API namespace (api client)
+  atmSession: '/atm/session',
 
-  // Spring Security 7 WebAuthn endpoints — at root context (not versioned)
+  // Spring Security 7 WebAuthn endpoints — at root context (ceremonyApi)
   registerOptions: '/webauthn/register/options',
   registerFinish: '/webauthn/register',
   authOptions: '/webauthn/authenticate/options',
@@ -67,7 +67,7 @@ export interface AtmSessionRequest {
 }
 
 export interface AtmSessionResponse {
-  maskedCard: string
+  maskedCardNumber: string
   accountId: string
   passkeyEnrolled: boolean
 }
@@ -83,10 +83,11 @@ export interface PasskeyAuthResponse {
  * Establish ATM session via card + PIN.
  * On success the BE sets an HttpSession cookie.
  * Returns whether this account already has a passkey enrolled.
+ * BE wraps the payload in ApiResponse<AtmSessionResponse>.
  */
 export async function atmSession(req: AtmSessionRequest): Promise<AtmSessionResponse> {
-  const { data } = await api.post<AtmSessionResponse>(EP.atmSession, req)
-  return data
+  const { data } = await api.post<ApiResponse<AtmSessionResponse>>(EP.atmSession, req)
+  return data.data as AtmSessionResponse
 }
 
 /**
@@ -94,7 +95,7 @@ export async function atmSession(req: AtmSessionRequest): Promise<AtmSessionResp
  * Requires an active authenticated session (card+PIN must have been verified).
  */
 export async function getRegistrationOptions(): Promise<PublicKeyCredentialCreationOptionsJSON> {
-  const { data } = await api.post<PublicKeyCredentialCreationOptionsJSON>(EP.registerOptions)
+  const { data } = await ceremonyApi.post<PublicKeyCredentialCreationOptionsJSON>(EP.registerOptions)
   return data
 }
 
@@ -111,14 +112,14 @@ export async function finishRegistration(
   credential: RegistrationResponseJSON,
   label = 'ATM passkey',
 ): Promise<void> {
-  await api.post(EP.registerFinish, { publicKey: credential, label })
+  await ceremonyApi.post(EP.registerFinish, { publicKey: credential, label })
 }
 
 /**
  * Step 1 of authentication ceremony — fetch request options (username-less / discoverable).
  */
 export async function getAuthOptions(): Promise<PublicKeyCredentialRequestOptionsJSON> {
-  const { data } = await api.post<PublicKeyCredentialRequestOptionsJSON>(EP.authOptions)
+  const { data } = await ceremonyApi.post<PublicKeyCredentialRequestOptionsJSON>(EP.authOptions)
   return data
 }
 
@@ -129,6 +130,6 @@ export async function getAuthOptions(): Promise<PublicKeyCredentialRequestOption
 export async function finishAuthentication(
   credential: AuthenticationResponseJSON,
 ): Promise<PasskeyAuthResponse> {
-  const { data } = await api.post<PasskeyAuthResponse>(EP.authFinish, credential)
+  const { data } = await ceremonyApi.post<PasskeyAuthResponse>(EP.authFinish, credential)
   return data
 }

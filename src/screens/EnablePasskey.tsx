@@ -15,7 +15,7 @@
  */
 
 import { useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { ScreenFrame } from '../components/ScreenFrame'
@@ -29,7 +29,6 @@ export function EnablePasskey() {
   const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)
   const enrollState = usePasskeyStore((s) => s.enrollState)
-  const enrollError = usePasskeyStore((s) => s.enrollError)
   const enrollPasskey = usePasskeyStore((s) => s.enrollPasskey)
   const resetEnrollState = usePasskeyStore((s) => s.resetEnrollState)
 
@@ -52,8 +51,8 @@ export function EnablePasskey() {
       toast.success(`🔐 ${t('passkeyReady')}`)
       proceed()
     } catch {
-      // enrollError is set in the store; show toast but let user navigate either way
-      const isCancel = enrollError === 'cancelled'
+      // Read enrollError from store directly (not from stale render closure).
+      const isCancel = usePasskeyStore.getState().enrollError === 'cancelled'
       if (!isCancel) {
         toast.error(t('passkeyEnrollError'))
       }
@@ -67,14 +66,25 @@ export function EnablePasskey() {
     proceed()
   }
 
-  if (!hasAccount) return null
+  if (!hasAccount) return <Navigate to="/" replace />
 
   const isBusy = enrollState === 'authenticating'
 
   return (
     <ScreenFrame title={`🔐 ${t('enablePasskey')}`}>
       <AnimatePresence mode="wait">
-        {enrollState !== 'success' && (
+        {enrollState === 'success' ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center space-y-2"
+          >
+            <div className="text-5xl">✅</div>
+            <p className="text-accent-cyan font-display">{t('passkeyReady')}</p>
+            <p className="text-slate-400 text-sm">{t('passkeyReadyHint')}</p>
+          </motion.div>
+        ) : (
           <motion.div
             key="prompt"
             initial={{ opacity: 0, y: 8 }}

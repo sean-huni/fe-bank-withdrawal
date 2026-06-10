@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { ScreenFrame } from '../components/ScreenFrame'
 import { usePasskeyStore } from '../stores/passkeyStore'
+import { usePasskeyAvailability } from '../hooks/usePasskeyAvailability'
 import { useT } from '../i18n/strings'
 
 export function PasskeyAuth() {
@@ -31,15 +32,18 @@ export function PasskeyAuth() {
   const resetAuthState = usePasskeyStore((s) => s.resetAuthState)
   const passkeyAvailable = usePasskeyStore((s) => s.passkeyAvailable)
 
+  // Ensure passkeyAvailable is populated even on deep-link / back-nav without visiting Welcome.
+  usePasskeyAvailability()
+
   // Prevent double-trigger (patterns.md once-per-value guard ref)
   const triggerRef = useRef(false)
 
   // Success: navigate + toast (side-effect on store state change — appropriate useEffect use)
   useEffect(() => {
-    if (authState === 'success') {
-      toast.success('Welcome back!')
-      setTimeout(() => navigate('/menu', { replace: true }), 500)
-    }
+    if (authState !== 'success') return
+    toast.success('Welcome back!')
+    const timer = setTimeout(() => navigate('/menu', { replace: true }), 500)
+    return () => clearTimeout(timer)
   // navigate is stable; only re-run when authState becomes 'success'
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authState])
@@ -78,6 +82,7 @@ export function PasskeyAuth() {
   const isError = authState === 'error'
   const isCancelled = authError === 'cancelled'
   const errorMsg = isCancelled ? t('passkeyCancelled') : (authError ?? t('passkeyError'))
+  const isBusy = isAuthenticating
 
   return (
     <ScreenFrame title={`🔐 ${t('tapToAuth')}`}>
@@ -87,8 +92,9 @@ export function PasskeyAuth() {
           <p className="text-slate-400">{t('passkeyNotSupported')}</p>
           <button
             type="button"
+            disabled={isBusy}
             onClick={handleUseCard}
-            className="glass w-full p-4 text-accent-cyan font-display active:scale-95 transition"
+            className="glass w-full p-4 text-accent-cyan font-display active:scale-95 transition disabled:opacity-50"
           >
             💳 {t('insertCard')}
           </button>
@@ -106,15 +112,17 @@ export function PasskeyAuth() {
               <p className="text-slate-400 mb-4">{t('tapToAuthHint')}</p>
               <button
                 type="button"
+                disabled={isBusy}
                 onClick={() => void handlePasskeyAuth()}
-                className="glass w-full p-4 text-accent-cyan font-display text-lg active:scale-95 transition"
+                className="glass w-full p-4 text-accent-cyan font-display text-lg active:scale-95 transition disabled:opacity-50"
               >
                 🔐 {t('tapToAuth')}
               </button>
               <button
                 type="button"
+                disabled={isBusy}
                 onClick={handleUseCard}
-                className="glass w-full p-3 text-slate-400 font-display text-sm active:scale-95 transition"
+                className="glass w-full p-3 text-slate-400 font-display text-sm active:scale-95 transition disabled:opacity-50"
               >
                 💳 {t('insertCard')}
               </button>

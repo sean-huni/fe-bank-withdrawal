@@ -40,7 +40,7 @@ const DICT = {
     passkeyAuthenticating: 'Kupinda mukati…',
     passkeyAuthenticatingHint: 'Pedza chiratidzo pane mudziyo wako',
     passkeyCancelled: 'Kupinda mukati kwakanzurwa',
-    passkeyError: 'Kupinda neicho chakandikira kushandisa passkey',
+    passkeyError: 'Kupinda nepasskey hakuna kubudirira',
     passkeyEnrollError: 'Kugadzira passkey kushandisike',
     enableNow: 'Gonesa iye zvino',
     skipForNow: 'Pamwe gare',

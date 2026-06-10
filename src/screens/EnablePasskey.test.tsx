@@ -6,13 +6,15 @@
  *  - Render: shows prompt when account is active
  *  - Skip button calls markDismissed and navigates to /menu
  *  - Enroll button triggers enrollPasskey; on success navigates to /menu
- *  - Cancel (NotAllowedError) stays on screen (re-arms), no navigation
+ *  - Cancel (NotAllowedError): stays on screen, no toast.error
+ *  - Server error: shows toast.error, stays on screen
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { EnablePasskey } from './EnablePasskey'
 import { hasPasskeyPromptBeenDismissed, markPasskeyPromptDismissed } from '../lib/passkeyPrompt'
 import { useSessionStore } from '../stores/sessionStore'
@@ -40,6 +42,7 @@ vi.mock('../api/passkey', () => ({
   finishRegistration: vi.fn(),
   getAuthOptions: vi.fn(),
   finishAuthentication: vi.fn(),
+  atmSession: vi.fn(),
 }))
 
 vi.mock('@simplewebauthn/browser', () => ({
@@ -95,10 +98,13 @@ describe('hasPasskeyPromptBeenDismissed / markPasskeyPromptDismissed', () => {
 // ── Render ────────────────────────────────────────────────────────────────────
 
 describe('EnablePasskey screen', () => {
-  it('renders null (no output) when there is no active session', () => {
+  it('redirects to "/" when there is no active session', () => {
     // account is null — signOut() was called in beforeEach
-    const { container } = renderScreen()
-    expect(container.firstChild).toBeNull()
+    // <Navigate to="/" replace /> renders nothing visible in MemoryRouter at /
+    renderScreen()
+    // The MemoryRouter starts at "/" so Navigate to "/" is a no-op navigation;
+    // we just assert no crash and no passkey prompt shown.
+    expect(screen.queryByText(/enable passkey on this atm/i)).not.toBeInTheDocument()
   })
 
   it('renders the enable prompt when a session is active', () => {
@@ -137,22 +143,49 @@ describe('EnablePasskey screen', () => {
 
   // ── Enroll cancel (NotAllowedError) ─────────────────────────────────────────
 
-  it('stays on screen when user cancels the browser passkey prompt (cancelled error)', async () => {
+  it('stays on screen and does NOT call toast.error when user cancels the browser passkey prompt', async () => {
     useSessionStore.getState().signIn(ACCOUNT, '4539148803436467')
 
-    const enrollSpy = vi.fn().mockRejectedValue(
-      Object.assign(new Error('Not allowed'), { name: 'NotAllowedError' }),
-    )
+    // Simulate real store behavior: enrollPasskey rejects AND sets enrollError='cancelled'
+    const enrollSpy = vi.fn().mockImplementation(async () => {
+      usePasskeyStore.setState({ enrollError: 'cancelled' })
+      throw Object.assign(new Error('Not allowed'), { name: 'NotAllowedError' })
+    })
     usePasskeyStore.setState({
       enrollPasskey: enrollSpy,
-      enrollError: 'cancelled',
     } as unknown as Parameters<typeof usePasskeyStore.setState>[0])
 
     renderScreen()
     await userEvent.click(screen.getByText(/enable now/i))
 
-    // Should not navigate — user cancelled, give them another chance
     await waitFor(() => expect(enrollSpy).toHaveBeenCalledTimes(1))
+    // Should not navigate — user cancelled, give them another chance
     expect(navigatedTo).toBeNull()
+    // toast.error must NOT be called for a user cancel
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  // ── Enroll server error ──────────────────────────────────────────────────────
+
+  it('shows toast.error and stays on screen on server error (non-cancel)', async () => {
+    useSessionStore.getState().signIn(ACCOUNT, '4539148803436467')
+
+    // Simulate real store behavior: enrollPasskey rejects with a server error
+    const enrollSpy = vi.fn().mockImplementation(async () => {
+      usePasskeyStore.setState({ enrollError: 'Server error registering passkey' })
+      throw new Error('Server error registering passkey')
+    })
+    usePasskeyStore.setState({
+      enrollPasskey: enrollSpy,
+    } as unknown as Parameters<typeof usePasskeyStore.setState>[0])
+
+    renderScreen()
+    await userEvent.click(screen.getByText(/enable now/i))
+
+    await waitFor(() => expect(enrollSpy).toHaveBeenCalledTimes(1))
+    // Should not navigate on error
+    expect(navigatedTo).toBeNull()
+    // toast.error IS called for a server error
+    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1))
   })
 })
