@@ -8,8 +8,11 @@ import { useCardsStore } from '../stores/cardsStore'
 import { useVerifyPin } from '../hooks/useVerifyPin'
 import { fromAxios, mapError } from '../lib/errorMap'
 import { useLocaleStore } from '../stores/localeStore'
+import { usePasskeyStore } from '../stores/passkeyStore'
 import { atmMetrics } from '../telemetry'
 import { useT } from '../i18n/strings'
+import { hasPasskeyPromptBeenDismissed } from '../lib/passkeyPrompt'
+import { atmSession } from '../api/passkey'
 
 export function Pin() {
   const t = useT()
@@ -22,6 +25,8 @@ export function Pin() {
   const cards = useCardsStore((s) => s.cards)
   const save = useCardsStore((s) => s.save)
   const verify = useVerifyPin()
+  const passkeyAvailable = usePasskeyStore((s) => s.passkeyAvailable)
+  const setPasskeyEnrolled = usePasskeyStore((s) => s.setPasskeyEnrolled)
   const [pin, setPin] = useState('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const submitting = useRef(false)
@@ -37,7 +42,26 @@ export function Pin() {
 
       if (!cards.some((c) => c.cardNumber === cardNumber)) save(cardNumber, account.holderName)
       signIn(account, cardNumber)
-      navigate('/menu')
+
+      // Establish HttpSession on the BE and retrieve passkeyEnrolled flag.
+      // Non-fatal: if the session call fails the classic card+PIN flow still works;
+      // passkey enrolment simply won't be offered this session.
+      try {
+        const session = await atmSession({ cardNumber, pin: entered })
+        setPasskeyEnrolled(session.passkeyEnrolled)
+      } catch {
+        toast(`⚠️ ${t('passkeyEnrollError')}`, { icon: '⚠️' })
+      }
+
+      // Post-PIN: offer passkey enrollment once if device supports it and account
+      // doesn't have one yet, and user hasn't dismissed the prompt this session.
+      // Re-read passkeyEnrolled from store (set by atmSession above) via getState().
+      const enrolledNow = usePasskeyStore.getState().passkeyEnrolled
+      if (passkeyAvailable && !enrolledNow && !hasPasskeyPromptBeenDismissed()) {
+        navigate('/enable-passkey')
+      } else {
+        navigate('/menu')
+      }
     } catch (err) {
       const { status, error } = fromAxios(err)
       atmMetrics.pinVerify(status === 401 ? 'invalid' : 'error')
