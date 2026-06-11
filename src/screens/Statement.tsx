@@ -35,7 +35,7 @@ export function Statement() {
   const account = useSessionStore((s) => s.account)
   const currency = account?.currency ?? 'EUR'
   const [page, setPage] = useState(0)
-  const { data, isLoading } = useStatement(account?.accountId ?? null, page)
+  const { data, isLoading, isPlaceholderData } = useStatement(account?.accountId ?? null, page)
 
   const rows = data?.content ?? []
   const totalPages = data?.page.totalPages ?? 0
@@ -53,7 +53,9 @@ export function Statement() {
           ))}
         </ul>
       )}
-      {totalPages > 1 && <Pager page={page} totalPages={totalPages} onPage={setPage} />}
+      {totalPages > 1 && (
+        <Pager page={page} totalPages={totalPages} onPage={setPage} disabled={isPlaceholderData} />
+      )}
     </ScreenFrame>
   )
 }

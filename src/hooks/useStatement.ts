@@ -8,5 +8,6 @@ export function useStatement(accountId: string | null, page = 0, size = 10) {
     enabled: !!accountId,
     // Keep showing the current page while the next one loads — no flash on page flips.
     placeholderData: keepPreviousData,
+    // CACHING-CANDIDATE: session-scoped, append-only reads; consider a short staleTime if refetch volume becomes a concern.
   })
 }

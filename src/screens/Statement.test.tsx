@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { Statement } from './Statement'
 import { useSessionStore } from '../stores/sessionStore'
 import * as atm from '../api/atm'
-import type { Transaction } from '../api/types'
+import type { Transaction, Page } from '../api/types'
 
 function tx(id: string): Transaction {
   return {
@@ -22,7 +22,7 @@ function tx(id: string): Transaction {
 function pageOf(ids: string[], number: number, totalPages: number) {
   return {
     content: ids.map(tx),
-    page: { size: 10, number, totalElements: totalPages * 10, totalPages },
+    page: { size: 10, number, totalElements: totalPages * 10, totalPages }, // totalElements approximate; screen only uses totalPages
   }
 }
 
@@ -72,6 +72,24 @@ describe('Statement pagination', () => {
     await waitFor(() => expect(spy).toHaveBeenLastCalledWith('acc-1', 1, 10))
     expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+  })
+
+  it('keeps the current rows visible while the next page is in flight', async () => {
+    let resolveSecond: ((value: Page<Transaction>) => void) | undefined
+    vi.spyOn(atm, 'statement')
+      .mockResolvedValueOnce(pageOf(['t1'], 0, 2))
+      .mockImplementationOnce(
+        () => new Promise((resolve) => { resolveSecond = resolve }),
+      )
+    renderStatement()
+    await screen.findByText('Page 1 of 2')
+    await userEvent.click(screen.getByRole('button', { name: /next/i }))
+    // Previous page's rows stay on screen (no loading flash) and the pager is locked.
+    expect(screen.queryByText('Loading…')).not.toBeInTheDocument()
+    expect(screen.getByText(/Jun/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+    resolveSecond?.(pageOf(['t2'], 1, 2))
+    expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument()
   })
 
   it('hides the pager when everything fits on one page', async () => {

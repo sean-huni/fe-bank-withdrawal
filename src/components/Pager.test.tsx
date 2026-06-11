@@ -32,4 +32,10 @@ describe('Pager', () => {
     expect(screen.getByRole('button', { name: /prev/i })).toBeDisabled()
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
   })
+
+  it('disables both buttons while disabled (in-flight page flip)', () => {
+    render(<Pager page={1} totalPages={3} onPage={() => {}} disabled />)
+    expect(screen.getByRole('button', { name: /prev/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+  })
 })
