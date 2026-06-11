@@ -131,6 +131,24 @@ A ready-made dashboard lives at `observability/grafana/atm-frontend-dashboard.js
 Panels: sessions/5m, withdrawals by result, card lookups by result, deposit & balance-inquiry
 totals, and a Web Vitals p95 panel.
 
+### Grafana via MCP (mcp-grafana)
+
+The Grafana instance these dashboards land in is the **backend repo's** LGTM stack
+(`bank-withdrawal/compose.yml`), which also runs a **`grafana/mcp-grafana`** container on
+**http://localhost:8001/mcp** so AI tooling manages dashboards/alerts as tool calls instead of
+hand-edited JSON (register in `~/.claude.json` as
+`"grafana": { "type": "http", "url": "http://localhost:8001/mcp" }`).
+
+Setup, pain points and pitfalls are documented in the backend README
+(*Observability → mcp-grafana*) — the two that bite from the FE side:
+
+- **`GRAFANA_URL` inside the MCP container must be `http://grafana-lgtm:3000`** (compose service
+  name). `localhost:3000` resolves to the container itself and every tool call fails with
+  `connection refused` even though Grafana works fine in your browser.
+- **Stale MCP sessions**: the backend's `bootRun` cycles the compose stack; a Claude Code session
+  started before the restart keeps a dead MCP session — run `/mcp` → reconnect rather than
+  debugging Grafana.
+
 ## Architecture
 
 A guarded screen state-machine on React Router. Zustand holds the session — including the
