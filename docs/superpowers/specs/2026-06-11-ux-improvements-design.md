@@ -75,10 +75,13 @@ countdown is exact, not an estimate.
 
 ### AmountPad (extend, `src/components/AmountPad.tsx`)
 
-New optional `max?: number` prop. Quick-cash chips with `value > max` are disabled
-(`disabled` + `aria-disabled`) with a short "over balance" hint. Withdraw passes the session
-balance; Deposit passes nothing (any deposit is affordable). The custom-amount path keeps the
-existing client pre-check + server-as-source-of-truth toast flow.
+New optional `max?: number` prop. Quick-cash chips with `value > max` are natively `disabled`,
+with a short "over balance" hint exposed via `aria-describedby` (an explicit `aria-disabled`
+was dropped in review as redundant with the native attribute; accepted trade-off — natively
+disabled buttons are unfocusable, so the hint mainly serves sighted users on this touch-first
+kiosk). Withdraw passes the session balance; Deposit passes nothing (any deposit is
+affordable). The custom-amount path keeps the existing client pre-check +
+server-as-source-of-truth toast flow.
 
 ### Focus rings (`src/index.css`)
 
@@ -110,7 +113,9 @@ new code.
 ## Error handling
 
 No changes to the error-mapping pipeline (`lib/errorMap.ts`). Pager bound-disabling prevents
-invalid page requests; statement fetch errors keep the existing toast path.
+invalid page requests. Known pre-existing gap (unchanged by this work): a statement fetch
+error renders the empty state ("No transactions yet") rather than an error message — there is
+no global query error handler. Follow-up candidate, out of scope here.
 
 ## Testing
 

@@ -10,6 +10,16 @@
 
 **Working branch:** `JIRA-000-feat-ux-improvements` (already cut from `dev`; spec committed).
 
+> **Execution notes (post-completion):** all 11 tasks executed and merged on this branch via
+> per-task implement → spec-review → quality-review loops. Review fixes evolved some details
+> beyond the snippets below — the code and the spec are canonical where they differ. Notable
+> evolutions: `NavTitle` gained a `noBack` flag (AppBar derives Back-visibility from it);
+> Pager is a `<nav aria-label>` landmark with a `disabled` prop (locked during page flips via
+> `isPlaceholderData`); a `pagination` i18n key exists; exit behavior is unified in
+> `useExitSession` (card-only take-card toast); the Task 8 `cancel`-key removal was superseded
+> (PasskeyAuth uses it); `useSessionTimeout` returns the countdown and does NOT navigate (the
+> layout's `<Navigate>` guard owns the redirect).
+
 **Conventions for every commit:** title prefixed `JIRA-000`, no `Co-Authored-By` trailers. Gates that must stay green: `npm run lint` (zero warnings), `npm run typecheck` (`tsc -b`), `npm run test`.
 
 ---
@@ -65,7 +75,7 @@ In `src/i18n/strings.ts`, inside the `en` object, after the line
     // Statement pager
     pageOf: 'Page {x} of {y}', prev: 'Prev', next: 'Next',
     // Session-timeout warning
-    timeoutTitle: 'Still there?', timeoutBody: 'Session ends in', continue: 'Continue',
+    timeoutTitle: 'Still there?', timeoutBody: 'Session ends in {secs}s', continue: 'Continue',
 ```
 
 Inside the `sn` object, after the line
@@ -79,7 +89,7 @@ Inside the `sn` object, after the line
     // Statement pager — TODO(sn): review translation
     pageOf: 'Peji {x} pa {y}', prev: 'Shure', next: 'Mberi',
     // Session-timeout warning — TODO(sn): review translation
-    timeoutTitle: 'Uchiripo here?', timeoutBody: 'Basa rinopera mu', continue: 'Enderera',
+    timeoutTitle: 'Uchiripo here?', timeoutBody: 'Basa rinopera mu {secs}s', continue: 'Enderera',
 ```
 
 (The `DICT` `as const` typing makes `tsc` fail if en/sn key sets diverge — that is the catalogue-parity guard.)
