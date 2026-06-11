@@ -1052,9 +1052,10 @@ is deleted. `useNavigate` stays (used for the receipt redirect in `confirm()`).
 
 (Receipt keeps its own Another-transaction/Exit buttons — the app bar shows no Back there.)
 
-- [ ] **Step 4: Remove the dead `cancel` i18n key**
+- [ ] **Step 4: ~~Remove the dead `cancel` i18n key~~ SUPERSEDED during execution**
 
-In `src/i18n/strings.ts` delete `cancel: 'Cancel',` from `en` and `cancel: 'Kanzura',` from `sn` (in the `confirm: …, cancel: …, another: …` lines).
+The key is NOT dead: `PasskeyAuth.tsx` uses `t('cancel')` to abort an in-progress passkey
+authentication (a true cancel, not a navigation Back). The key stays in both locales.
 
 - [ ] **Step 5: Run the gates**
 

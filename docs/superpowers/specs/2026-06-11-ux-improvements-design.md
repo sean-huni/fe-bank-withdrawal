@@ -45,8 +45,10 @@ Rendered once by `AuthenticatedLayout` so every authenticated route gets it for 
 - **Title** — derived from the route via a small `src/config/navTitles.ts` map
   (route path → i18n key + emoji). `ScreenFrame` in-body titles are removed to avoid
   duplication; `ScreenFrame` keeps layout duties only.
-- **🚪 Exit** — calls the existing `signOut()` then navigates to `/`. The Menu screen's
-  bottom "End session" button is removed as redundant.
+- **🚪 Exit** — ends the session via a shared `useExitSession()` hook (`signOut()`, a
+  "Please take your card" toast for card-based sessions only — passkey sessions have no card —
+  then navigate to `/`). Receipt's in-body Exit uses the same hook, so both exit paths behave
+  identically. The Menu screen's bottom "End session" button is removed as redundant.
 
 ### BalanceCard (new, `src/components/BalanceCard.tsx`)
 
@@ -98,10 +100,12 @@ changes.
 ## i18n
 
 New FE-owned strings in `src/i18n/strings.ts`, en + sn: `back`, `available`,
-`pageOf` ("Page {x} of {y}"), `prev`, `next`, `overBalance`, `timeoutTitle`, `timeoutBody`,
-`continue`. The existing `exit` key is reused by the AppBar. Shona drafts (e.g. *Dzokera*
-for Back) marked `// TODO(sn): review translation`. The `cancel` key is removed once unused.
-No hardcoded UI strings in new code.
+`pageOf` ("Page {x} of {y}"), `prev`, `next`, `pagination`, `overBalance`, `timeoutTitle`,
+`timeoutBody` (carries a `{secs}` placeholder), `continue`. The existing `exit` key is reused
+by the AppBar. Shona drafts (e.g. *Dzokera* for Back) marked `// TODO(sn): review translation`.
+The `cancel` key is RETAINED: `PasskeyAuth` legitimately uses it to abort an in-progress
+passkey authentication (a true cancel, not a navigation Back). No hardcoded UI strings in
+new code.
 
 ## Error handling
 
