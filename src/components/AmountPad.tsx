@@ -1,5 +1,6 @@
 import { QUICK_CASH } from '../config/quickCash'
 import { Money } from './Money'
+import { useT } from '../i18n/strings'
 
 /** Keep only digits and a single decimal point with at most 2 fraction digits. */
 function sanitizeAmount(raw: string): string {
@@ -15,27 +16,35 @@ export function AmountPad({
   value,
   onChange,
   currency = 'EUR',
+  max,
 }: {
   value: string
   onChange: (next: string) => void
   currency?: string
+  /** When set, quick-cash chips above this amount are disabled (error prevention). */
+  max?: number
 }) {
+  const t = useT()
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         {QUICK_CASH.map((amt) => {
           const selected = value === String(amt)
+          const over = max !== undefined && amt > max
           return (
             <button
               key={amt}
               type="button"
               aria-pressed={selected}
+              disabled={over}
+              aria-disabled={over}
               onClick={() => onChange(String(amt))}
-              className={`glass h-16 font-display text-xl active:scale-95 transition ${
+              className={`glass h-16 font-display text-xl active:scale-95 transition disabled:opacity-40 disabled:active:scale-100 ${
                 selected ? 'ring-2 ring-accent-cyan text-accent-cyan' : ''
               }`}
             >
               <Money amount={amt} currency={currency} />
+              {over && <span className="block text-xs text-rose-300 font-sans">{t('overBalance')}</span>}
             </button>
           )
         })}
