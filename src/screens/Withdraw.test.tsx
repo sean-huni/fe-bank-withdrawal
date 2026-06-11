@@ -50,10 +50,28 @@ describe('Withdraw', () => {
     await waitFor(() => expect(spy).toHaveBeenCalledWith('acc-1', '50', expect.any(String)))
   })
 
-  it('shows the available balance so the user need not cancel to check it', () => {
+  it('shows the available balance prominently and has no Cancel button', () => {
     renderWithdraw()
-    expect(screen.getByText(/Balance/i)).toBeInTheDocument()
+    expect(screen.getByText(/Available/i)).toBeInTheDocument()
     expect(screen.getByText('€1,000.00')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+  })
+
+  it('disables quick-cash chips above the session balance', () => {
+    useSessionStore.setState({
+      account: {
+        accountId: 'acc-1',
+        holderName: 'Alice',
+        maskedCardNumber: '•••• 6467',
+        balance: '60.00',
+        currency: 'EUR',
+      },
+      cardNumber: '4539148803436467',
+      startedAt: Date.now(),
+    })
+    renderWithdraw()
+    expect(screen.getByRole('button', { name: /€50\.00/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /€100\.00/ })).toBeDisabled()
   })
 
   describe('Shona locale', () => {
@@ -61,10 +79,10 @@ describe('Withdraw', () => {
       useLocaleStore.setState({ locale: 'en' })
     })
 
-    it('shows the balance label in Shona when locale is sn', () => {
+    it('shows the available-balance label in Shona when locale is sn', () => {
       useLocaleStore.setState({ locale: 'sn' })
       renderWithdraw()
-      expect(screen.getByText(/Mari iripo/)).toBeInTheDocument()
+      expect(screen.getByText(/Mari inowanikwa/)).toBeInTheDocument()
       expect(screen.getByText('€1,000.00')).toBeInTheDocument()
     })
   })

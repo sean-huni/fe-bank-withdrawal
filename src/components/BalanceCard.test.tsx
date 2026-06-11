@@ -8,4 +8,9 @@ describe('BalanceCard', () => {
     expect(screen.getByText(/available/i)).toBeInTheDocument()
     expect(screen.getByText('€1,250.00')).toBeInTheDocument()
   })
+
+  it('falls back to the default currency when none is given', () => {
+    render(<BalanceCard amount="50.00" />)
+    expect(screen.getByText('€50.00')).toBeInTheDocument()
+  })
 })

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { ScreenFrame } from '../components/ScreenFrame'
 import { AmountPad } from '../components/AmountPad'
-import { Money } from '../components/Money'
+import { BalanceCard } from '../components/BalanceCard'
 import { useWithdraw } from '../hooks/useWithdraw'
 import { useSessionStore } from '../stores/sessionStore'
 import { fromAxios, mapError } from '../lib/errorMap'
@@ -49,10 +49,13 @@ export function Withdraw() {
 
   return (
     <ScreenFrame title={`💰 ${t('withdraw')}`}>
-      <AmountPad value={amount} onChange={setAmount} currency={account.currency} />
-      <p className="text-slate-400 text-sm mt-3 text-center">
-        {t('balance')}: <Money amount={account.balance} currency={account.currency} />
-      </p>
+      <BalanceCard amount={account.balance} currency={account.currency} />
+      <AmountPad
+        value={amount}
+        onChange={setAmount}
+        currency={account.currency}
+        max={Number(account.balance)}
+      />
       <button
         type="button"
         className="glass w-full p-4 mt-4 text-accent-cyan font-display active:scale-95 transition disabled:opacity-50"
@@ -60,9 +63,6 @@ export function Withdraw() {
         onClick={confirm}
       >
         {t('confirm')}
-      </button>
-      <button type="button" className="w-full p-3 mt-2 text-slate-400" onClick={() => navigate('/menu')}>
-        {t('cancel')}
       </button>
     </ScreenFrame>
   )
