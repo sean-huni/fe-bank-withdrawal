@@ -89,17 +89,19 @@ changes.
 |---|---|
 | Withdraw | + BalanceCard · − grey balance caption · − Cancel · AmountPad gets `max` |
 | Deposit | − Cancel |
+| Balance | − "◀ Cancel" button (`Balance.tsx:36`) — app bar Back replaces it |
 | Statement | More/Cancel → Pager · `placeholderData: keepPreviousData` on the query so page flips don't flash the loading state |
 | Menu | − bottom "End session" (app bar Exit replaces it) |
-| Receipt | unchanged (app bar shows title + Exit, no Back) |
-| All authenticated | AppBar + SessionTimeoutDialog via `AuthenticatedLayout` |
+| Receipt | keeps its own Menu/Exit action buttons; no Back in app bar |
+| All authenticated | AppBar + SessionTimeoutDialog via `AuthenticatedLayout`; in-body `ScreenFrame` titles move to the app bar |
 
 ## i18n
 
-New FE-owned strings in `src/i18n/strings.ts`, en + sn: `back`, `exit`, `available`,
+New FE-owned strings in `src/i18n/strings.ts`, en + sn: `back`, `available`,
 `pageOf` ("Page {x} of {y}"), `prev`, `next`, `overBalance`, `timeoutTitle`, `timeoutBody`,
-`continue`. Shona drafts (e.g. *Dzokera* for Back) marked `// TODO(sn): review translation`.
-The `cancel` key is removed once unused. No hardcoded UI strings in new code.
+`continue`. The existing `exit` key is reused by the AppBar. Shona drafts (e.g. *Dzokera*
+for Back) marked `// TODO(sn): review translation`. The `cancel` key is removed once unused.
+No hardcoded UI strings in new code.
 
 ## Error handling
 
