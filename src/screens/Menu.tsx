@@ -7,7 +7,6 @@ export function Menu() {
   const t = useT()
   const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)
-  const signOut = useSessionStore((s) => s.signOut)
 
   const actions: { emoji: string; label: string; to: string }[] = [
     { emoji: '💰', label: t('balance'), to: '/balance' },
@@ -17,7 +16,8 @@ export function Menu() {
   ]
 
   return (
-    <ScreenFrame title={`👋 ${account?.holderName ?? ''}`}>
+    <ScreenFrame>
+      <p className="font-display text-2xl sm:text-3xl mb-5">👋 {account?.holderName ?? ''}</p>
       <div className="grid grid-cols-2 gap-3">
         {actions.map((a) => (
           <button
@@ -31,16 +31,6 @@ export function Menu() {
           </button>
         ))}
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          signOut()
-          navigate('/')
-        }}
-        className="w-full p-4 mt-4 text-slate-400 hover:text-slate-200 transition"
-      >
-        🚪 {t('exit')}
-      </button>
     </ScreenFrame>
   )
 }

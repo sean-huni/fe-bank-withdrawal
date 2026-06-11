@@ -41,7 +41,7 @@ export function Deposit() {
   }
 
   return (
-    <ScreenFrame title={`🏧 ${t('deposit')}`}>
+    <ScreenFrame>
       <AmountPad value={amount} onChange={setAmount} currency={account.currency} />
       <button
         type="button"
@@ -50,9 +50,6 @@ export function Deposit() {
         onClick={confirm}
       >
         {t('confirm')}
-      </button>
-      <button type="button" className="w-full p-3 mt-2 text-slate-400" onClick={() => navigate('/menu')}>
-        {t('cancel')}
       </button>
     </ScreenFrame>
   )

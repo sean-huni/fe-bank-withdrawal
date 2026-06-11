@@ -25,7 +25,8 @@ export function Receipt() {
   const verb = kind === 'withdraw' ? t('withdraw') : t('deposit')
 
   return (
-    <ScreenFrame title={`✅ ${verb}`}>
+    <ScreenFrame>
+      <p className="font-display text-2xl text-center mb-2">✅ {verb}</p>
       <div className="text-center py-2">
         <p className="font-display text-4xl text-accent-cyan mb-2">
           <Money amount={tx.amount} currency={currency} />

@@ -48,7 +48,7 @@ export function Withdraw() {
   }
 
   return (
-    <ScreenFrame title={`💰 ${t('withdraw')}`}>
+    <ScreenFrame>
       <BalanceCard amount={account.balance} currency={account.currency} />
       <AmountPad
         value={amount}

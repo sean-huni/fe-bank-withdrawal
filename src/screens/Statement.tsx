@@ -5,7 +5,6 @@ import { Pager } from '../components/Pager'
 import { useStatement } from '../hooks/useStatement'
 import { useSessionStore } from '../stores/sessionStore'
 import type { Transaction } from '../api/types'
-import { useT } from '../i18n/strings'
 
 const dateFmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
@@ -31,7 +30,6 @@ function Row({ tx, currency }: { tx: Transaction; currency: string }) {
 }
 
 export function Statement() {
-  const t = useT()
   const account = useSessionStore((s) => s.account)
   const currency = account?.currency ?? 'EUR'
   const [page, setPage] = useState(0)
@@ -41,7 +39,7 @@ export function Statement() {
   const totalPages = data?.page.totalPages ?? 0
 
   return (
-    <ScreenFrame title={`🧾 ${t('statement')}`}>
+    <ScreenFrame>
       {isLoading && rows.length === 0 ? (
         <p className="text-slate-400">Loading…</p>
       ) : rows.length === 0 ? (

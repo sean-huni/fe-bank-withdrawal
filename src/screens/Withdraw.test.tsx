@@ -19,6 +19,7 @@ function renderWithdraw() {
   )
 }
 
+// Runs before every test in this file, including the nested Shona block.
 beforeEach(() => {
   vi.restoreAllMocks()
   useSessionStore.setState({
@@ -45,7 +46,7 @@ describe('Withdraw', () => {
       occurredAt: '2026-06-08T10:00:00Z',
     })
     renderWithdraw()
-    await userEvent.click(screen.getByRole('button', { name: /50/ }))
+    await userEvent.click(screen.getByRole('button', { name: /€50\.00/ }))
     await userEvent.click(screen.getByRole('button', { name: /confirm/i }))
     await waitFor(() => expect(spy).toHaveBeenCalledWith('acc-1', '50', expect.any(String)))
   })
