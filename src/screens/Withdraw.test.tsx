@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { Withdraw } from './Withdraw'
 import { useSessionStore } from '../stores/sessionStore'
+import { useLocaleStore } from '../stores/localeStore'
 import * as atm from '../api/atm'
 
 function renderWithdraw() {
@@ -53,6 +54,19 @@ describe('Withdraw', () => {
     renderWithdraw()
     expect(screen.getByText(/Balance/i)).toBeInTheDocument()
     expect(screen.getByText('€1,000.00')).toBeInTheDocument()
+  })
+
+  describe('Shona locale', () => {
+    afterEach(() => {
+      useLocaleStore.setState({ locale: 'en' })
+    })
+
+    it('shows the balance label in Shona when locale is sn', () => {
+      useLocaleStore.setState({ locale: 'sn' })
+      renderWithdraw()
+      expect(screen.getByText(/Mari iripo/)).toBeInTheDocument()
+      expect(screen.getByText('€1,000.00')).toBeInTheDocument()
+    })
   })
 
   it('reuses the SAME idempotency key across re-renders and repeated confirms', async () => {
