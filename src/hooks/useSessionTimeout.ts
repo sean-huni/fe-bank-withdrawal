@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../stores/sessionStore'
 
 const IDLE_MS = 60_000
@@ -11,7 +10,6 @@ const TICK_MS = 250
  * or null while no warning is active. Any user interaction resets the window.
  */
 export function useSessionTimeout(): number | null {
-  const navigate = useNavigate()
   const signOut = useSessionStore((s) => s.signOut)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
 
@@ -30,13 +28,13 @@ export function useSessionTimeout(): number | null {
       setSecondsLeft(null)
       deadline = Date.now() + IDLE_MS
       warnTimer = window.setTimeout(() => {
-        setSecondsLeft(Math.ceil(WARN_MS / 1000))
+        setSecondsLeft(WARN_MS / 1000)
         tick = window.setInterval(() => {
           const left = Math.ceil((deadline - Date.now()) / 1000)
           if (left <= 0) {
             clearTimers()
             signOut()
-            navigate('/')
+            // AuthenticatedLayout's <Navigate> guard redirects once the account clears.
           } else {
             setSecondsLeft(left)
           }
@@ -51,7 +49,7 @@ export function useSessionTimeout(): number | null {
       clearTimers()
       events.forEach((e) => window.removeEventListener(e, reset))
     }
-  }, [navigate, signOut])
+  }, [signOut])
 
   return secondsLeft
 }

@@ -45,7 +45,7 @@ describe('session-timeout warning', () => {
     expect(screen.getByText(/15/)).toBeInTheDocument()
   })
 
-  it('any interaction dismisses the warning and resets the timer', () => {
+  it('any interaction dismisses the warning and re-arms the full idle window', () => {
     renderLayout()
     act(() => vi.advanceTimersByTime(45_000))
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
@@ -53,9 +53,13 @@ describe('session-timeout warning', () => {
       fireEvent.click(screen.getByRole('button', { name: /continue/i }))
     })
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-    // A fresh 60s window: still signed in 50s later…
-    act(() => vi.advanceTimersByTime(50_000))
+    // Fresh 60s window: no warning at 44s…
+    act(() => vi.advanceTimersByTime(44_000))
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
     expect(screen.getByText('menu-screen')).toBeInTheDocument()
+    // …and the warning re-appears right after the 45s mark.
+    act(() => vi.advanceTimersByTime(2_000))
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument()
   })
 
   it('signs out and returns to Welcome when the countdown expires', () => {
