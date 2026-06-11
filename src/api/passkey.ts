@@ -16,6 +16,10 @@
  *             — establishes HttpSession
  *       401: existing error shape (PIN_INVALID / CARD_NOT_FOUND)
  *
+ *  GET  /api/{v}/atm/session   (authenticated session)
+ *       200: ApiResponse<{ accountId, holderName, maskedCardNumber, balance, currency, passkeyEnrolled }>
+ *       — whoami; hydrates the FE session after passkey login
+ *
  *  POST /webauthn/register/options  (authenticated session)
  *       → PublicKeyCredentialCreationOptionsJSON
  *
@@ -77,6 +81,15 @@ export interface PasskeyAuthResponse {
   authenticated: boolean
 }
 
+export interface AtmSessionSnapshot {
+  accountId: string
+  holderName: string
+  maskedCardNumber: string
+  balance: string
+  currency: string
+  passkeyEnrolled: boolean
+}
+
 // ── API calls ────────────────────────────────────────────────────────────────
 
 /**
@@ -134,4 +147,14 @@ export async function finishAuthentication(
 ): Promise<PasskeyAuthResponse> {
   const { data } = await ceremonyApi.post<PasskeyAuthResponse>(EP.authFinish, credential)
   return data
+}
+
+/**
+ * Whoami — snapshot of the authenticated session (works for card+PIN AND passkey
+ * sessions). Used to hydrate the kiosk UI after a passkey login, where no card
+ * insertion ever provided account data.
+ */
+export async function whoami(): Promise<AtmSessionSnapshot> {
+  const { data } = await api.get<ApiResponse<AtmSessionSnapshot>>(EP.atmSession)
+  return data.data as AtmSessionSnapshot
 }

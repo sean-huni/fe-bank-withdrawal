@@ -20,7 +20,9 @@ import {
   finishAuthentication,
   getRegistrationOptions,
   finishRegistration,
+  whoami,
 } from '../api/passkey'
+import { useSessionStore } from './sessionStore'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,7 +101,20 @@ export const usePasskeyStore = create<PasskeyStore>((set) => ({
       // Step 3: send assertion to server → sets authenticated HttpSession cookie
       await finishAuthentication(credential)
 
-      set({ authState: 'success', authError: null })
+      // Step 4: hydrate the kiosk session — passkey login never saw card data.
+      const snapshot = await whoami()
+      useSessionStore.getState().signIn(
+        {
+          accountId: snapshot.accountId,
+          holderName: snapshot.holderName,
+          maskedCardNumber: snapshot.maskedCardNumber,
+          balance: snapshot.balance,
+          currency: snapshot.currency,
+        },
+        snapshot.maskedCardNumber,
+      )
+
+      set({ authState: 'success', authError: null, passkeyEnrolled: snapshot.passkeyEnrolled })
     } catch (err) {
       const msg = classifyError(err)
       set({ authState: 'error', authError: msg })

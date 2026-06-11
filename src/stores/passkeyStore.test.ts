@@ -17,6 +17,7 @@ vi.mock('../api/passkey', () => ({
   finishAuthentication: vi.fn(),
   getRegistrationOptions: vi.fn(),
   finishRegistration: vi.fn(),
+  whoami: vi.fn(),
 }))
 
 // Mock @simplewebauthn/browser (lazy import in store)
@@ -27,6 +28,7 @@ vi.mock('@simplewebauthn/browser', () => ({
 
 import * as passkeyApi from '../api/passkey'
 import * as simplewebauthn from '@simplewebauthn/browser'
+import { useSessionStore } from './sessionStore'
 
 const mockAuthOptions = { challenge: 'abc', rpId: 'localhost', allowCredentials: [] } as unknown as import('@simplewebauthn/browser').PublicKeyCredentialRequestOptionsJSON
 const mockRegOptions = { challenge: 'def', rp: { name: 'ATM' } } as unknown as import('@simplewebauthn/browser').PublicKeyCredentialCreationOptionsJSON
@@ -47,6 +49,7 @@ function resetStore() {
 beforeEach(() => {
   vi.clearAllMocks()
   resetStore()
+  useSessionStore.getState().signOut()
 })
 
 afterEach(() => {
@@ -62,6 +65,14 @@ describe('passkeyStore › loginWithPasskey', () => {
     vi.mocked(passkeyApi.finishAuthentication).mockResolvedValue({
       authenticated: true,
       redirectUrl: '/menu',
+    })
+    vi.mocked(passkeyApi.whoami).mockResolvedValue({
+      accountId: 'acc-0',
+      holderName: 'Test',
+      maskedCardNumber: '•••• •••• •••• 0000',
+      balance: '0.00',
+      currency: 'USD',
+      passkeyEnrolled: false,
     })
 
     const storeStates: string[] = []
@@ -110,6 +121,32 @@ describe('passkeyStore › loginWithPasskey', () => {
     usePasskeyStore.getState().resetAuthState()
     expect(usePasskeyStore.getState().authState).toBe('idle')
     expect(usePasskeyStore.getState().authError).toBeNull()
+  })
+
+  it('hydrates the session store from whoami after a successful ceremony', async () => {
+    vi.mocked(passkeyApi.getAuthOptions).mockResolvedValue(mockAuthOptions)
+    vi.mocked(simplewebauthn.startAuthentication).mockResolvedValue(mockAuthCredential)
+    vi.mocked(passkeyApi.finishAuthentication).mockResolvedValue({ redirectUrl: '/', authenticated: true })
+    vi.mocked(passkeyApi.whoami).mockResolvedValue({
+      accountId: 'acc-1',
+      holderName: 'Bob',
+      maskedCardNumber: '•••• •••• •••• 9424',
+      balance: '500.00',
+      currency: 'EUR',
+      passkeyEnrolled: true,
+    })
+
+    await usePasskeyStore.getState().loginWithPasskey()
+
+    const session = useSessionStore.getState()
+    expect(session.account).toEqual({
+      accountId: 'acc-1',
+      holderName: 'Bob',
+      maskedCardNumber: '•••• •••• •••• 9424',
+      balance: '500.00',
+      currency: 'EUR',
+    })
+    expect(usePasskeyStore.getState().passkeyEnrolled).toBe(true)
   })
 })
 
