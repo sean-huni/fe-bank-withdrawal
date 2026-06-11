@@ -1254,7 +1254,7 @@ export function SessionTimeoutDialog({ secondsLeft }: { secondsLeft: number | nu
       <div className="glass p-6 w-full max-w-xs text-center">
         <p className="font-display text-lg mb-1">⏳ {t('timeoutTitle')}</p>
         <p className="text-slate-400 text-sm mb-4">
-          {t('timeoutBody')} {secondsLeft}s
+          {t('timeoutBody').replace('{secs}', String(secondsLeft))}
         </p>
         <button type="button" className="glass w-full p-3 text-accent-cyan font-display active:scale-95 transition">
           {t('continue')}

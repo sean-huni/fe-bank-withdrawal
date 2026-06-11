@@ -15,7 +15,7 @@ const DICT = {
     // Statement pager
     pageOf: 'Page {x} of {y}', prev: 'Prev', next: 'Next',
     // Session-timeout warning
-    timeoutTitle: 'Still there?', timeoutBody: 'Session ends in', continue: 'Continue',
+    timeoutTitle: 'Still there?', timeoutBody: 'Session ends in {secs}s', continue: 'Continue',
     // Passkey / WebAuthn strings (FE-OWN labels — not BE-originated)
     tapToAuth: 'Tap to authenticate',
     tapToAuthHint: 'Use your device passkey — no card needed',
@@ -44,7 +44,7 @@ const DICT = {
     // Statement pager — TODO(sn): review translation
     pageOf: 'Peji {x} pa {y}', prev: 'Shure', next: 'Mberi',
     // Session-timeout warning — TODO(sn): review translation
-    timeoutTitle: 'Uchiripo here?', timeoutBody: 'Basa rinopera mu', continue: 'Enderera',
+    timeoutTitle: 'Uchiripo here?', timeoutBody: 'Basa rinopera mu {secs}s', continue: 'Enderera',
     // Passkey / WebAuthn strings (sn — Shona)
     tapToAuth: 'Bata kuti upinde',
     tapToAuthHint: 'Shandisa passkey yako — hapana kadhi rinodikanwa',
