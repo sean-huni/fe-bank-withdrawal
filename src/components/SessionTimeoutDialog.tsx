@@ -1,7 +1,17 @@
 import { useT } from '../i18n/strings'
 
-/** Idle-session warning. The Continue click bubbles to the window listener, which resets the timer. */
-export function SessionTimeoutDialog({ secondsLeft }: { secondsLeft: number | null }) {
+/**
+ * Idle-session warning. The Continue button resets the timer explicitly via
+ * `onContinue`; other user interactions still reset it via the window listeners
+ * registered in `useSessionTimeout`.
+ */
+export function SessionTimeoutDialog({
+  secondsLeft,
+  onContinue,
+}: {
+  secondsLeft: number | null
+  onContinue: () => void
+}) {
   const t = useT()
   if (secondsLeft === null) return null
   return (
@@ -16,7 +26,7 @@ export function SessionTimeoutDialog({ secondsLeft }: { secondsLeft: number | nu
         <p className="text-slate-400 text-sm mb-4">
           {t('timeoutBody').replace('{secs}', String(secondsLeft))}
         </p>
-        <button autoFocus type="button" className="glass w-full p-3 text-accent-cyan font-display active:scale-95 transition">
+        <button autoFocus type="button" onClick={onContinue} className="glass w-full p-3 text-accent-cyan font-display active:scale-95 transition">
           {t('continue')}
         </button>
       </div>

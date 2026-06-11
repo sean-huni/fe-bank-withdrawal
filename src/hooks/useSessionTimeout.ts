@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSessionStore } from '../stores/sessionStore'
 
 const IDLE_MS = 60_000
@@ -6,12 +6,14 @@ const WARN_MS = 15_000
 const TICK_MS = 250
 
 /**
- * Client-side idle timeout. Returns the warning countdown in whole seconds,
- * or null while no warning is active. Any user interaction resets the window.
+ * Client-side idle timeout. `secondsLeft` is the warning countdown in whole
+ * seconds (null while no warning is active). Any user interaction resets the
+ * window; `keepAlive` resets it explicitly (e.g. the dialog's Continue button).
  */
-export function useSessionTimeout(): number | null {
+export function useSessionTimeout(): { secondsLeft: number | null; keepAlive: () => void } {
   const signOut = useSessionStore((s) => s.signOut)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
+  const resetRef = useRef<() => void>(() => {})
 
   useEffect(() => {
     let warnTimer: number
@@ -41,6 +43,7 @@ export function useSessionTimeout(): number | null {
         }, TICK_MS)
       }, IDLE_MS - WARN_MS)
     }
+    resetRef.current = reset
 
     const events = ['click', 'keydown', 'touchstart'] as const
     events.forEach((e) => window.addEventListener(e, reset))
@@ -51,5 +54,6 @@ export function useSessionTimeout(): number | null {
     }
   }, [signOut])
 
-  return secondsLeft
+  const keepAlive = useCallback(() => resetRef.current(), [])
+  return { secondsLeft, keepAlive }
 }

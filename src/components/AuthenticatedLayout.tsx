@@ -7,13 +7,13 @@ import { SessionTimeoutDialog } from './SessionTimeoutDialog'
 /** Guards all authenticated routes and runs the idle-timeout once for the whole session. */
 export function AuthenticatedLayout() {
   const account = useSessionStore((s) => s.account)
-  const secondsLeft = useSessionTimeout()
+  const { secondsLeft, keepAlive } = useSessionTimeout()
   if (!account) return <Navigate to="/" replace />
   return (
     <>
       <AppBar />
       <Outlet />
-      <SessionTimeoutDialog secondsLeft={secondsLeft} />
+      <SessionTimeoutDialog secondsLeft={secondsLeft} onContinue={keepAlive} />
     </>
   )
 }
