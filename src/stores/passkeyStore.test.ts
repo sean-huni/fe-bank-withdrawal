@@ -147,6 +147,19 @@ describe('passkeyStore › loginWithPasskey', () => {
       currency: 'EUR',
     })
     expect(usePasskeyStore.getState().passkeyEnrolled).toBe(true)
+    expect(session.cardNumber).toBe('•••• •••• •••• 9424')
+  })
+
+  it('leaves the session signed out and reports error when whoami fails after the ceremony', async () => {
+    vi.mocked(passkeyApi.getAuthOptions).mockResolvedValue(mockAuthOptions)
+    vi.mocked(simplewebauthn.startAuthentication).mockResolvedValue(mockAuthCredential)
+    vi.mocked(passkeyApi.finishAuthentication).mockResolvedValue({ redirectUrl: '/', authenticated: true })
+    vi.mocked(passkeyApi.whoami).mockRejectedValue(new Error('network down'))
+
+    await expect(usePasskeyStore.getState().loginWithPasskey()).rejects.toThrow('network down')
+
+    expect(usePasskeyStore.getState().authState).toBe('error')
+    expect(useSessionStore.getState().account).toBeNull()
   })
 })
 
