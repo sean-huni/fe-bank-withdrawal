@@ -49,6 +49,12 @@ describe('Withdraw', () => {
     await waitFor(() => expect(spy).toHaveBeenCalledWith('acc-1', '50', expect.any(String)))
   })
 
+  it('shows the available balance so the user need not cancel to check it', () => {
+    renderWithdraw()
+    expect(screen.getByText(/Balance/i)).toBeInTheDocument()
+    expect(screen.getByText('€1,000.00')).toBeInTheDocument()
+  })
+
   it('reuses the SAME idempotency key across re-renders and repeated confirms', async () => {
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     const spy = vi.spyOn(atm, 'withdraw').mockResolvedValue({
