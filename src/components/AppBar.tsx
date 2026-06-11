@@ -1,13 +1,13 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useSessionStore } from '../stores/sessionStore'
 import { navTitle } from '../config/navTitles'
 import { useT } from '../i18n/strings'
+import { useExitSession } from '../hooks/useExitSession'
 
 export function AppBar() {
   const t = useT()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const signOut = useSessionStore((s) => s.signOut)
+  const exitSession = useExitSession()
   const title = navTitle(pathname)
 
   return (
@@ -29,10 +29,7 @@ export function AppBar() {
       </h1>
       <button
         type="button"
-        onClick={() => {
-          signOut()
-          navigate('/')
-        }}
+        onClick={exitSession}
         className="justify-self-end text-slate-400 hover:text-slate-200 px-2 py-1 transition"
       >
         🚪 {t('exit')}

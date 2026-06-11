@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { navTitle } from './navTitles'
 
 describe('navTitle', () => {
-  it('maps each authenticated route to an emoji + i18n key', () => {
+  it('maps each authenticated route to an emoji + i18n key + noBack flag', () => {
     expect(navTitle('/menu')).toEqual({ emoji: '🏦', key: 'menu', noBack: true })
     expect(navTitle('/balance')).toEqual({ emoji: '💰', key: 'balance' })
     expect(navTitle('/withdraw')).toEqual({ emoji: '💸', key: 'withdraw' })
