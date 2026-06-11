@@ -31,20 +31,25 @@ export function AmountPad({
         {QUICK_CASH.map((amt) => {
           const selected = value === String(amt)
           const over = max !== undefined && amt > max
+          const hintId = `over-hint-${amt}`
           return (
             <button
               key={amt}
               type="button"
               aria-pressed={selected}
               disabled={over}
-              aria-disabled={over}
+              aria-describedby={over ? hintId : undefined}
               onClick={() => onChange(String(amt))}
               className={`glass h-16 font-display text-xl active:scale-95 transition disabled:opacity-40 disabled:active:scale-100 ${
                 selected ? 'ring-2 ring-accent-cyan text-accent-cyan' : ''
               }`}
             >
               <Money amount={amt} currency={currency} />
-              {over && <span className="block text-xs text-rose-300 font-sans">{t('overBalance')}</span>}
+              {over && (
+                <span id={hintId} aria-hidden="true" className="block text-xs text-rose-300 font-sans">
+                  {t('overBalance')}
+                </span>
+              )}
             </button>
           )
         })}
