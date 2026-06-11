@@ -14,7 +14,7 @@ export function Pager({
     .replace('{x}', String(page + 1))
     .replace('{y}', String(totalPages))
   return (
-    <div className="flex items-center justify-between gap-3 mt-4">
+    <nav aria-label={t('pagination')} className="flex items-center justify-between gap-3 mt-4">
       <button
         type="button"
         disabled={page === 0}
@@ -32,6 +32,6 @@ export function Pager({
       >
         {t('next')} ▶
       </button>
-    </div>
+    </nav>
   )
 }

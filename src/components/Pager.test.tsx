@@ -26,4 +26,10 @@ describe('Pager', () => {
     await userEvent.click(screen.getByRole('button', { name: /next/i }))
     expect(onPage).toHaveBeenCalledWith(2)
   })
+
+  it('disables both buttons when everything fits on one page', () => {
+    render(<Pager page={0} totalPages={1} onPage={() => {}} />)
+    expect(screen.getByRole('button', { name: /prev/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+  })
 })

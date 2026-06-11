@@ -13,7 +13,7 @@ const DICT = {
     // Withdraw balance card + quick-cash guard
     available: 'Available', overBalance: 'Over balance',
     // Statement pager
-    pageOf: 'Page {x} of {y}', prev: 'Prev', next: 'Next',
+    pageOf: 'Page {x} of {y}', prev: 'Prev', next: 'Next', pagination: 'Pagination',
     // Session-timeout warning
     timeoutTitle: 'Still there?', timeoutBody: 'Session ends in {secs}s', continue: 'Continue',
     // Passkey / WebAuthn strings (FE-OWN labels — not BE-originated)
@@ -42,7 +42,7 @@ const DICT = {
     // Withdraw balance card + quick-cash guard — TODO(sn): review translation
     available: 'Mari inowanikwa', overBalance: 'Inopfuura mari iripo',
     // Statement pager — TODO(sn): review translation
-    pageOf: 'Peji {x} pa {y}', prev: 'Shure', next: 'Mberi',
+    pageOf: 'Peji {x} pa {y}', prev: 'Shure', next: 'Mberi', pagination: 'Mapeji',
     // Session-timeout warning — TODO(sn): review translation
     timeoutTitle: 'Uchiripo here?', timeoutBody: 'Basa rinopera mu {secs}s', continue: 'Enderera',
     // Passkey / WebAuthn strings (sn — Shona)
