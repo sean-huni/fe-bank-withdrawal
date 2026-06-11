@@ -1,8 +1,8 @@
 import type { StringKey } from '../i18n/strings'
 
-export type NavTitle = { emoji: string; key: StringKey }
+export type NavTitle = { emoji: string; key: StringKey; noBack?: true }
 
-const MENU_FALLBACK: NavTitle = { emoji: '🏦', key: 'menu' }
+const MENU_FALLBACK: NavTitle = { emoji: '🏦', key: 'menu', noBack: true }
 
 /** Route → app-bar title. Emojis follow the Menu screen's action icons. */
 const TITLES: Record<string, NavTitle> = {
@@ -11,7 +11,7 @@ const TITLES: Record<string, NavTitle> = {
   '/withdraw': { emoji: '💸', key: 'withdraw' },
   '/deposit': { emoji: '🏧', key: 'deposit' },
   '/statement': { emoji: '🧾', key: 'statement' },
-  '/receipt': { emoji: '✅', key: 'receipt' },
+  '/receipt': { emoji: '✅', key: 'receipt', noBack: true },
 }
 
 export function navTitle(pathname: string): NavTitle {
