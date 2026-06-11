@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ScreenFrame } from '../components/ScreenFrame'
 import { Money } from '../components/Money'
+import { Pager } from '../components/Pager'
 import { useStatement } from '../hooks/useStatement'
 import { useSessionStore } from '../stores/sessionStore'
 import type { Transaction } from '../api/types'
@@ -32,14 +32,13 @@ function Row({ tx, currency }: { tx: Transaction; currency: string }) {
 
 export function Statement() {
   const t = useT()
-  const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)
   const currency = account?.currency ?? 'EUR'
   const [page, setPage] = useState(0)
   const { data, isLoading } = useStatement(account?.accountId ?? null, page)
 
   const rows = data?.content ?? []
-  const hasMore = data ? data.page.number + 1 < data.page.totalPages : false
+  const totalPages = data?.page.totalPages ?? 0
 
   return (
     <ScreenFrame title={`🧾 ${t('statement')}`}>
@@ -54,23 +53,7 @@ export function Statement() {
           ))}
         </ul>
       )}
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        <button
-          type="button"
-          onClick={() => navigate('/menu')}
-          className="glass p-4 font-display active:scale-95 transition"
-        >
-          ◀ {t('cancel')}
-        </button>
-        <button
-          type="button"
-          disabled={!hasMore}
-          onClick={() => setPage((p) => p + 1)}
-          className="glass p-4 font-display active:scale-95 transition disabled:opacity-40"
-        >
-          More ▼
-        </button>
-      </div>
+      {totalPages > 1 && <Pager page={page} totalPages={totalPages} onPage={setPage} />}
     </ScreenFrame>
   )
 }
