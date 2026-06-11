@@ -20,10 +20,10 @@
  *       → PublicKeyCredentialCreationOptionsJSON
  *
  *  POST /webauthn/register          (authenticated session)
- *       body: { publicKey: <startRegistration() output>, label: string }
- *       NOTE: Spring Security 7's WebAuthn endpoint wraps the credential under
- *       a "publicKey" key and accepts an optional "label" — adapt if the live
- *       server shape differs (leave this comment as a TODO marker).
+ *       body: { publicKey: { credential: <startRegistration() output>, label: string } }
+ *       NOTE: Spring Security 7's WebAuthnRegistrationFilter nests BOTH the
+ *       credential and the label under "publicKey" (verified against the live
+ *       server 2026-06-11; flat shape → bare 400).
  *       → 200 (no body) on success
  *
  *  POST /webauthn/authenticate/options
@@ -102,17 +102,19 @@ export async function getRegistrationOptions(): Promise<PublicKeyCredentialCreat
 /**
  * Step 3 of registration ceremony — send the authenticator's response to the server.
  *
- * Spring Security 7 WebAuthn registration endpoint expects:
- *   { publicKey: <RegistrationResponseJSON>, label: string }
+ * Spring Security 7 WebAuthn registration endpoint (WebAuthnRegistrationFilter) expects
+ * credential AND label nested under "publicKey":
+ *   { publicKey: { credential: <RegistrationResponseJSON>, label: string } }
  *
- * TODO(live-BE-integration): verify the exact wrapper shape against the running server
- * and adjust EP.registerFinish + the body shape here if Spring's actual request format differs.
+ * Verified against the live BE (2026-06-11): the flat shape
+ * { publicKey: <cred>, label } is rejected with a bare 400 before verification.
+ * Regression-locked in passkey.contract.test.ts.
  */
 export async function finishRegistration(
   credential: RegistrationResponseJSON,
   label = 'ATM passkey',
 ): Promise<void> {
-  await ceremonyApi.post(EP.registerFinish, { publicKey: credential, label })
+  await ceremonyApi.post(EP.registerFinish, { publicKey: { credential, label } })
 }
 
 /**
