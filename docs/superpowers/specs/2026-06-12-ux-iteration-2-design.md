@@ -34,7 +34,7 @@ Playwright screenshots of the merged round-1 UI (`.superpowers/ux-shots/`, captu
 ### Layout shell (`AuthenticatedLayout`)
 
 The glass card moves up into the layout. `AuthenticatedLayout` renders ONE
-`motion.section` — classes `glass w-full max-w-md shadow-2xl overflow-hidden`, the
+`motion.section` — classes `glass w-full max-w-md shadow-2xl`, the
 existing 0.2s entry fade, `key={pathname}` so route changes re-animate — containing:
 
 - `<AppBar />` as the card's attached header: no own `glass`/rounding/`mb-3`; instead
@@ -48,7 +48,7 @@ existing 0.2s entry fade, `key={pathname}` so route changes re-animate — conta
 `<SessionTimeoutDialog />` must render as a SIBLING of the `motion.section`, not inside
 it: the section's `y` entry animation applies a `transform`, and a transformed ancestor
 becomes the containing block for `position: fixed` descendants — inside the shell the
-overlay would be mispositioned and clipped by `overflow-hidden`. The layout returns
+overlay would be mispositioned relative to the card instead of the viewport. The layout returns
 `<> <motion.section>…</motion.section> <SessionTimeoutDialog … /> </>`.
 
 The six authenticated screens (Menu, Balance, Withdraw, Deposit, Statement, Receipt)
