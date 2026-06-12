@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { navTitle } from './navTitles'
+import { NAV_DESTINATIONS, navTitle } from './navTitles'
 
 describe('navTitle', () => {
   it('maps each authenticated route to an emoji + i18n key + noBack flag', () => {
@@ -13,5 +13,12 @@ describe('navTitle', () => {
 
   it('falls back to the menu title for unknown paths', () => {
     expect(navTitle('/nope')).toEqual({ emoji: '🏦', key: 'menu', noBack: true })
+  })
+
+  it('exposes the four cross-screen destinations in display order', () => {
+    expect(NAV_DESTINATIONS).toEqual(['/balance', '/withdraw', '/deposit', '/statement'])
+    for (const to of NAV_DESTINATIONS) {
+      expect(navTitle(to).key).not.toBe('menu') // every destination has its own mapped title
+    }
   })
 })

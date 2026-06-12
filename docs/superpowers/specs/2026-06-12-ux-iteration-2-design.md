@@ -39,8 +39,10 @@ existing 0.2s entry fade, `key={pathname}` so route changes re-animate — conta
 
 - `<AppBar />` as the card's attached header: no own `glass`/rounding/`mb-3`; instead
   `border-b border-surface-700/50 bg-surface-900/40 px-3 py-2`, same 3-column grid
-  (Back / title / Exit). `overflow-hidden` on the shell clips the header to the card
-  radius.
+  (Back / title / Exit) plus `rounded-t-2xl` so the header's own background matches the
+  card radius. The shell deliberately has NO `overflow-hidden` — it would clip the
+  NavMenu dropdown (absolutely positioned inside the card) on short screens such as the
+  Statement empty state.
 - a content wrapper `div` with the card padding (`p-6 sm:p-8`) around `<Outlet />`.
 
 `<SessionTimeoutDialog />` must render as a SIBLING of the `motion.section`, not inside
