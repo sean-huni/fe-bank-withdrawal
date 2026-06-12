@@ -27,6 +27,14 @@ const accountSnapshot = {
   traceId: 'trace-verify',
 }
 
+const atmSessionOk = {
+  success: true,
+  data: { accountId: 'acc-1', holderName: 'Alice', maskedCardNumber: '•••• •••• •••• 6467', passkeyEnrolled: true },
+  error: null,
+  timestamp: '2026-06-08T10:00:00Z',
+  traceId: 'trace-session',
+}
+
 const withdrawalTx = {
   success: true,
   data: {
@@ -68,6 +76,9 @@ test('happy path: auto-submit card → auto-verify PIN → withdraw → receipt'
   // Two-phase auth: GET .../cards/{n} is the greeting lookup, POST .../pin verifies.
   // Playwright matches the most-recently-registered route first, so register the more
   // specific `/pin` route LAST to ensure it wins over the broader `/cards/*` matcher.
+  await page.route('**/api/v1/atm/session', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(atmSessionOk) }),
+  )
   await page.route('**/api/v1/cards/*', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cardSummary) }),
   )
@@ -105,6 +116,9 @@ test('happy path: auto-submit card → auto-verify PIN → withdraw → receipt'
 })
 
 test('app bar + statement pagination: back to menu, page through statement', async ({ page }) => {
+  await page.route('**/api/v1/atm/session', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(atmSessionOk) }),
+  )
   await page.route('**/api/v1/cards/*', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cardSummary) }),
   )

@@ -29,6 +29,7 @@ const DICT = {
     passkeyCancelled: 'Authentication cancelled',
     passkeyError: 'Passkey authentication failed',
     passkeyEnrollError: 'Passkey registration failed',
+    passkeySetupUnavailable: 'Passkey setup unavailable right now',
     enableNow: 'Enable now',
     skipForNow: 'Maybe later',
   },
@@ -58,6 +59,7 @@ const DICT = {
     passkeyCancelled: 'Kupinda mukati kwakanzurwa',
     passkeyError: 'Kupinda nepasskey hakuna kubudirira',
     passkeyEnrollError: 'Kugadzira passkey kushandisike',
+    passkeySetupUnavailable: 'Kugadzirisa passkey hakuwaniki izvozvi', // TODO(sn): review translation
     enableNow: 'Gonesa iye zvino',
     skipForNow: 'Pamwe gare',
   },

@@ -34,6 +34,14 @@ const accountSnapshot = {
   traceId: 'trace-verify',
 }
 
+const atmSessionOk = {
+  success: true,
+  data: { accountId: 'acc-1', holderName: 'Alice', maskedCardNumber: '•••• •••• •••• 6467', passkeyEnrolled: true },
+  error: null,
+  timestamp: '2026-06-08T10:00:00Z',
+  traceId: 'trace-session',
+}
+
 const withdrawalTx = {
   success: true,
   data: {
@@ -84,6 +92,9 @@ test.use({ viewport: { width: 480, height: 900 } })
 // Shared route mocks. NOTE: no clock.install() in the main walk — a frozen clock
 // stalls framer-motion's entry fade and screenshots capture half-faded cards.
 async function mockRoutes(page: import('@playwright/test').Page) {
+  await page.route('**/api/v1/atm/session', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(atmSessionOk) }),
+  )
   await page.route('**/api/v1/cards/*', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cardSummary) }),
   )
@@ -127,6 +138,7 @@ test('capture every screen for UX review', async ({ page }) => {
     await page.getByRole('button', { name: d, exact: true }).click()
   }
   await expect(page).toHaveURL(/\/menu$/)
+  await expect(page.getByText(/Passkey registration|Passkey setup/i)).toHaveCount(0)
   await shot('03-menu')
 
   // 04 Balance
