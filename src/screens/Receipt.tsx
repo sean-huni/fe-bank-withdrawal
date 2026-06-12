@@ -3,7 +3,6 @@ import { Money } from '../components/Money'
 import { useSessionStore } from '../stores/sessionStore'
 import type { Transaction } from '../api/types'
 import { useT } from '../i18n/strings'
-import { useExitSession } from '../hooks/useExitSession'
 
 type ReceiptState = { tx: Transaction; kind: 'withdraw' | 'deposit' }
 
@@ -13,7 +12,6 @@ export function Receipt() {
   const t = useT()
   const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)
-  const exitSession = useExitSession()
   const state = useLocation().state as ReceiptState | null
 
   // Direct navigation without a transaction — bounce to the menu.
@@ -44,22 +42,13 @@ export function Receipt() {
           <dd>{timeFmt.format(new Date(tx.occurredAt))}</dd>
         </div>
       </dl>
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        <button
-          type="button"
-          onClick={() => navigate('/menu')}
-          className="glass p-4 text-accent-cyan font-display active:scale-95 transition"
-        >
-          🔁 {t('another')}
-        </button>
-        <button
-          type="button"
-          onClick={exitSession}
-          className="glass p-4 font-display active:scale-95 transition"
-        >
-          🚪 {t('exit')}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => navigate('/menu')}
+        className="glass w-full p-4 mt-6 text-accent-cyan font-display active:scale-95 transition"
+      >
+        🔁 {t('another')}
+      </button>
     </>
   )
 }

@@ -2,12 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import toast from 'react-hot-toast'
 import { Receipt } from './Receipt'
 import { useSessionStore } from '../stores/sessionStore'
 import type { Transaction } from '../api/types'
-
-vi.mock('react-hot-toast', () => ({ default: vi.fn() }))
 
 const tx: Transaction = {
   transactionId: 'tx-1',
@@ -23,6 +20,7 @@ function renderReceipt() {
     <MemoryRouter initialEntries={[{ pathname: '/receipt', state: { tx, kind: 'withdraw' } }]}>
       <Routes>
         <Route path="/" element={<p>welcome-screen</p>} />
+        <Route path="/menu" element={<p>menu-screen</p>} />
         <Route path="/receipt" element={<Receipt />} />
       </Routes>
     </MemoryRouter>,
@@ -44,20 +42,14 @@ beforeEach(() => {
   })
 })
 
-describe('Receipt exit', () => {
-  it('signs out, reminds the card user to take the card, and returns to Welcome', async () => {
+describe('Receipt body', () => {
+  it('shows the transaction and exactly one action: another transaction', async () => {
     renderReceipt()
-    await userEvent.click(screen.getByRole('button', { name: /end session/i }))
-    expect(screen.getByText('welcome-screen')).toBeInTheDocument()
-    expect(useSessionStore.getState().account).toBeNull()
-    expect(toast).toHaveBeenCalledWith(expect.stringContaining('take your card'))
-  })
-
-  it('skips the take-card reminder for passkey sessions (no card)', async () => {
-    useSessionStore.setState({ cardNumber: null })
-    renderReceipt()
-    await userEvent.click(screen.getByRole('button', { name: /end session/i }))
-    expect(screen.getByText('welcome-screen')).toBeInTheDocument()
-    expect(toast).not.toHaveBeenCalled()
+    expect(screen.getByText('tx-1')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /end session/i })).not.toBeInTheDocument()
+    const buttons = screen.getAllByRole('button')
+    expect(buttons).toHaveLength(1)
+    await userEvent.click(screen.getByRole('button', { name: /another transaction/i }))
+    expect(screen.getByText('menu-screen')).toBeInTheDocument()
   })
 })
