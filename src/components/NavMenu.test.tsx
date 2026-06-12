@@ -59,4 +59,13 @@ describe('NavMenu', () => {
     fireEvent.mouseDown(document.body)
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
+
+  it('closes on a second trigger click (toggle)', async () => {
+    renderAt('/withdraw')
+    const trigger = screen.getByRole('button', { name: /withdraw/i })
+    await userEvent.click(trigger)
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+    await userEvent.click(trigger)
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
 })
