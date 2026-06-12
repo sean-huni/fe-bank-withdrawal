@@ -70,3 +70,21 @@ describe('session-timeout warning', () => {
     expect(useSessionStore.getState().account).toBeFalsy()
   })
 })
+
+describe('card shell', () => {
+  it('renders the app-bar header and screen content inside one card section', () => {
+    const { container } = renderLayout()
+    const section = container.querySelector('section')
+    expect(section).not.toBeNull()
+    expect(section!.querySelector('header')).not.toBeNull()
+    expect(section!.textContent).toContain('menu-screen')
+  })
+
+  it('keeps the timeout dialog outside the animated card (transform would clip the fixed overlay)', () => {
+    const { container } = renderLayout()
+    act(() => vi.advanceTimersByTime(45_000))
+    const section = container.querySelector('section')
+    const dialog = screen.getByRole('alertdialog')
+    expect(section!.contains(dialog)).toBe(false)
+  })
+})
