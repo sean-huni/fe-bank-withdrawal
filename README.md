@@ -1,11 +1,13 @@
 # 🏧 fe-bank-withdrawal
 
-An ATM-styled React SPA for the [`bank-withdrawal`](../../../be/java/spring/bank-withdrawal)
+An ATM-styled React SPA for the [`bank-withdrawal`](https://github.com/sean-huni/bank-withdrawal#readme)
 API: card → PIN → balance → withdraw → deposit → mini-statement → receipt. Login **auto-submits** —
 the card is looked up the instant a valid 16-digit Luhn number is entered, and the PIN is
-**server-verified** the instant the 4th digit lands (no Insert/Enter press). Emoji-forward
-dark glassmorphism, idempotent transactions, EN/SN i18n, and OpenTelemetry → Grafana LGTM
-observability.
+**server-verified** the instant the 4th digit lands (no Insert/Enter press). Every authenticated
+screen sits in a shared ATM shell with an attached app bar (◀ Back · cross-screen navigation menu ·
+🚪 End Session), a session-timeout warning dialog, and a paginated mini-statement with transaction
+ids. Emoji-forward dark glassmorphism, idempotent transactions, EN/SN i18n, and
+OpenTelemetry → Grafana LGTM observability.
 
 ## Stack
 
@@ -16,10 +18,11 @@ Library · Playwright.
 ## Prerequisites
 
 - **Node 22** (see `.nvmrc`) — `nvm use`.
-- The **`bank-withdrawal` backend** running on `http://localhost:8080` with the two-phase auth
-  endpoints — card lookup (`GET /api/v1/cards/{cardNumber}`, greeting only, no balance) and PIN
-  verify (`POST /api/v1/cards/{cardNumber}/pin`). Start its `docker compose up` for the database
-  and the Grafana LGTM observability stack.
+- The **`bank-withdrawal` backend** running on `http://localhost:8080` — its `./gradlew bootRun`
+  also starts the database and the Grafana LGTM observability stack via docker compose. The
+  [backend README](https://github.com/sean-huni/bank-withdrawal#readme) is the single source of
+  truth for the full-stack launch, demo credentials, the REST API, Swagger OAuth2 login
+  (PKCE), and Grafana dashboards/alerts — none of that is repeated here.
 
 ## Quick start
 
@@ -88,6 +91,11 @@ The backend seeds two demo accounts. Card numbers are Luhn-valid and friendly (n
 | Alice  | `4539 1488 0343 6467` |
 | Bob    | `6011 0009 9013 9424` |
 
+Cards, PIN and all other demo identities are seeded and owned by the backend — its **DEV TEST DATA
+console banner** (and the
+[backend README](https://github.com/sean-huni/bank-withdrawal#readme)) is the always-true source,
+including the live seeded account ids that change per database.
+
 The **demo PIN is `1234`** and is **verified server-side** (`POST /cards/{n}/pin`) — a wrong PIN
 returns `401 PIN_INVALID`, surfaced as an inline error before clearing for a retry. After a
 successful verify, the card is remembered locally (Zustand `persist`) and appears as a tap-to-use
@@ -133,14 +141,10 @@ totals, and a Web Vitals p95 panel.
 
 ### Grafana via MCP (mcp-grafana)
 
-The Grafana instance these dashboards land in is the **backend repo's** LGTM stack
-(`bank-withdrawal/compose.yml`), which also runs a **`grafana/mcp-grafana`** container on
-**http://localhost:8001/mcp** so AI tooling manages dashboards/alerts as tool calls instead of
-hand-edited JSON (register in `~/.claude.json` as
-`"grafana": { "type": "http", "url": "http://localhost:8001/mcp" }`).
-
-Setup, pain points and pitfalls are documented in the backend README
-(*Observability → mcp-grafana*) — the two that bite from the FE side:
+The Grafana instance these dashboards land in is the **backend repo's** LGTM stack. Setup,
+client registration, managed dashboards/alert rules, and the full pitfall list live in the
+[backend README](https://github.com/sean-huni/bank-withdrawal#readme)
+(*Observability → mcp-grafana*) — the two pitfalls that bite from the FE side:
 
 - **`GRAFANA_URL` inside the MCP container must be `http://grafana-lgtm:3000`** (compose service
   name). `localhost:3000` resolves to the container itself and every tool call fails with
