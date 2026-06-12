@@ -26,6 +26,7 @@ function renderPin() {
 }
 
 beforeEach(() => {
+  vi.clearAllMocks()
   vi.restoreAllMocks()
   useSessionStore.getState().signOut()
   useSessionStore.getState().setPending('4539148803436467', 'Alice')
@@ -35,6 +36,9 @@ describe('Pin', () => {
   it('auto-verifies the instant the 4th digit is entered — no Enter', async () => {
     const spy = vi.spyOn(atm, 'verifyPin').mockResolvedValue({
       accountId: 'acc-1', holderName: 'Alice', maskedCardNumber: '•••• 6467', balance: '1000.00', currency: 'EUR',
+    })
+    vi.spyOn(passkey, 'atmSession').mockResolvedValue({
+      accountId: 'acc-1', maskedCardNumber: '•••• •••• •••• 6467', passkeyEnrolled: true,
     })
     renderPin()
     await userEvent.keyboard('1234') // no Enter pressed
@@ -57,6 +61,9 @@ describe('Pin', () => {
   })
 
   it('shows an error and clears the PIN dots on a wrong PIN (401), re-arming for retry', async () => {
+    vi.spyOn(passkey, 'atmSession').mockResolvedValue({
+      accountId: 'acc-1', maskedCardNumber: '•••• •••• •••• 6467', passkeyEnrolled: true,
+    })
     const spy = vi.spyOn(atm, 'verifyPin').mockRejectedValue({ response: { status: 401, data: { error: { code: 'PIN_INVALID', message: 'Incorrect PIN' } } } })
     renderPin()
     await userEvent.keyboard('9999')

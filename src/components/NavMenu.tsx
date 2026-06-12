@@ -16,7 +16,7 @@ export function NavMenu() {
 
   useEffect(() => {
     if (!open) return
-    const onDocMouseDown = (e: MouseEvent) => {
+    const onDocPointerDown = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
     }
     const onKeyDown = (e: KeyboardEvent) => {
@@ -25,10 +25,10 @@ export function NavMenu() {
         triggerRef.current?.focus()
       }
     }
-    document.addEventListener('mousedown', onDocMouseDown)
+    document.addEventListener('pointerdown', onDocPointerDown)
     document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.removeEventListener('mousedown', onDocMouseDown)
+      document.removeEventListener('pointerdown', onDocPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [open])
@@ -56,35 +56,33 @@ export function NavMenu() {
           </span>
         </button>
       </h1>
+      {/* Touch-first kiosk, 4 items: APG roving-focus/arrow-key navigation intentionally omitted. */}
       {open && (
-        <>
-          {/* Touch-first kiosk, 4 items: APG roving-focus/arrow-key navigation intentionally omitted. */}
-          <div
-            id={menuId}
-            role="menu"
-            aria-label={t('menu')}
-            className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-40 glass p-1 w-44 shadow-2xl"
-          >
-            {NAV_DESTINATIONS.map((to) => {
-              const item = navTitle(to)
-              const current = to === pathname
-              return (
-                <button
-                  key={to}
-                  type="button"
-                  role="menuitem"
-                  aria-current={current ? 'page' : undefined}
-                  onClick={() => go(to)}
-                  className={`w-full text-left px-3 py-2 rounded-xl transition hover:bg-surface-700/40 ${
-                    current ? 'bg-accent-cyan/15 text-accent-cyan' : ''
-                  }`}
-                >
-                  {item.emoji} {t(item.key)}
-                </button>
-              )
-            })}
-          </div>
-        </>
+        <div
+          id={menuId}
+          role="menu"
+          aria-label={t('menu')}
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-40 glass p-1 w-44 shadow-2xl"
+        >
+          {NAV_DESTINATIONS.map((to) => {
+            const item = navTitle(to)
+            const current = to === pathname
+            return (
+              <button
+                key={to}
+                type="button"
+                role="menuitem"
+                aria-current={current ? 'page' : undefined}
+                onClick={() => go(to)}
+                className={`w-full text-left px-3 py-2 rounded-xl transition hover:bg-surface-700/40 ${
+                  current ? 'bg-accent-cyan/15 text-accent-cyan' : ''
+                }`}
+              >
+                {item.emoji} {t(item.key)}
+              </button>
+            )
+          })}
+        </div>
       )}
     </div>
   )

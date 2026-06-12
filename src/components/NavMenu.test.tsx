@@ -56,7 +56,7 @@ describe('NavMenu', () => {
   it('closes on an outside click', async () => {
     renderAt('/withdraw')
     await userEvent.click(screen.getByRole('button', { name: /withdraw/i }))
-    fireEvent.mouseDown(document.body)
+    fireEvent.pointerDown(document.body)
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
