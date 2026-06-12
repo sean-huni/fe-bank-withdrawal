@@ -135,14 +135,17 @@ test('app bar + statement pagination: back to menu, page through statement', asy
   const outline = await page.evaluate(() => getComputedStyle(document.activeElement!).outlineStyle)
   expect(outline).toBe('solid')
 
-  // Withdraw: Available banner, then app-bar Back returns to the menu.
+  // Withdraw: Available banner, then jump straight to the Statement via the title menu.
   await page.getByRole('button', { name: /Withdraw|Bvisa mari/i }).click()
   await expect(page).toHaveURL(/\/withdraw$/)
   await expect(page.getByText(/Available|Mari inowanikwa/i)).toBeVisible()
+  await page.locator('header').getByRole('button', { name: /Withdraw|Bvisa mari/i }).click()
+  await page.getByRole('menuitem', { name: /Mini-statement|Chitsauko/i }).click()
+  await expect(page).toHaveURL(/\/statement$/)
+
+  // App-bar Back still returns to the menu, then re-enter the statement.
   await page.getByRole('button', { name: /Back|Dzokera/i }).click()
   await expect(page).toHaveURL(/\/menu$/)
-
-  // Statement: Prev disabled on page 1, Next flips to page 2.
   await page.getByRole('button', { name: /Mini-statement|Chitsauko/i }).click()
   await expect(page).toHaveURL(/\/statement$/)
   await expect(page.getByText('Page 1 of 2')).toBeVisible()
