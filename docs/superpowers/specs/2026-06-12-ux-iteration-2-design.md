@@ -42,7 +42,12 @@ existing 0.2s entry fade, `key={pathname}` so route changes re-animate — conta
   (Back / title / Exit). `overflow-hidden` on the shell clips the header to the card
   radius.
 - a content wrapper `div` with the card padding (`p-6 sm:p-8`) around `<Outlet />`.
-- `<SessionTimeoutDialog />` stays as-is (renders outside the card via fixed overlay).
+
+`<SessionTimeoutDialog />` must render as a SIBLING of the `motion.section`, not inside
+it: the section's `y` entry animation applies a `transform`, and a transformed ancestor
+becomes the containing block for `position: fixed` descendants — inside the shell the
+overlay would be mispositioned and clipped by `overflow-hidden`. The layout returns
+`<> <motion.section>…</motion.section> <SessionTimeoutDialog … /> </>`.
 
 The six authenticated screens (Menu, Balance, Withdraw, Deposit, Statement, Receipt)
 drop their `<ScreenFrame>` wrappers and render bare content. `ScreenFrame` is untouched
