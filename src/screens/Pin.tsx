@@ -50,7 +50,7 @@ export function Pin() {
         const session = await atmSession({ cardNumber, pin: entered })
         setPasskeyEnrolled(session.passkeyEnrolled)
       } catch {
-        toast(`⚠️ ${t('passkeyEnrollError')}`, { icon: '⚠️' })
+        toast(t('passkeySetupUnavailable'), { icon: '⚠️' })
       }
 
       // Post-PIN: offer passkey enrollment once if device supports it and account

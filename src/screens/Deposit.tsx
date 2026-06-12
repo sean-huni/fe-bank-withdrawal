@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { AmountPad } from '../components/AmountPad'
 import { useDeposit } from '../hooks/useDeposit'
 import { useSessionStore } from '../stores/sessionStore'
@@ -41,7 +40,7 @@ export function Deposit() {
   }
 
   return (
-    <ScreenFrame>
+    <>
       <AmountPad value={amount} onChange={setAmount} currency={account.currency} />
       <button
         type="button"
@@ -51,6 +50,6 @@ export function Deposit() {
       >
         {t('confirm')}
       </button>
-    </ScreenFrame>
+    </>
   )
 }

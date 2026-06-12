@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { AmountPad } from '../components/AmountPad'
 import { BalanceCard } from '../components/BalanceCard'
 import { useWithdraw } from '../hooks/useWithdraw'
@@ -48,7 +47,7 @@ export function Withdraw() {
   }
 
   return (
-    <ScreenFrame>
+    <>
       <BalanceCard amount={account.balance} currency={account.currency} />
       <AmountPad
         value={amount}
@@ -64,6 +63,6 @@ export function Withdraw() {
       >
         {t('confirm')}
       </button>
-    </ScreenFrame>
+    </>
   )
 }

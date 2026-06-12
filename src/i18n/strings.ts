@@ -9,7 +9,7 @@ const DICT = {
     exit: 'End session', confirm: 'Confirm', cancel: 'Cancel', another: 'Another transaction',
     takeCard: 'Please take your card', amount: 'Amount', yourCards: 'Your cards',
     // Navigation / app bar
-    back: 'Back', menu: 'Menu', receipt: 'Receipt',
+    back: 'Back', menu: 'Menu', receipt: 'Receipt', atm: 'ATM',
     // Withdraw balance card + quick-cash guard
     available: 'Available', overBalance: 'Over balance',
     // Statement pager
@@ -29,6 +29,7 @@ const DICT = {
     passkeyCancelled: 'Authentication cancelled',
     passkeyError: 'Passkey authentication failed',
     passkeyEnrollError: 'Passkey registration failed',
+    passkeySetupUnavailable: 'Passkey setup unavailable right now',
     enableNow: 'Enable now',
     skipForNow: 'Maybe later',
   },
@@ -38,7 +39,7 @@ const DICT = {
     exit: 'Pedza', confirm: 'Simbisa', cancel: 'Kanzura', another: 'Imwe basa',
     takeCard: 'Tora kadhi rako', amount: 'Mari', yourCards: 'Makadhi ako',
     // Navigation / app bar — TODO(sn): review translation
-    back: 'Dzokera', menu: 'Menyu', receipt: 'Risiti',
+    back: 'Dzokera', menu: 'Menyu', receipt: 'Risiti', atm: 'ATM',
     // Withdraw balance card + quick-cash guard — TODO(sn): review translation
     available: 'Mari inowanikwa', overBalance: 'Inopfuura mari iripo',
     // Statement pager — TODO(sn): review translation
@@ -58,6 +59,7 @@ const DICT = {
     passkeyCancelled: 'Kupinda mukati kwakanzurwa',
     passkeyError: 'Kupinda nepasskey hakuna kubudirira',
     passkeyEnrollError: 'Kugadzira passkey kushandisike',
+    passkeySetupUnavailable: 'Kugadzirisa passkey hakuwaniki izvozvi', // TODO(sn): review translation
     enableNow: 'Gonesa iye zvino',
     skipForNow: 'Pamwe gare',
   },

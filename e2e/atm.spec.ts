@@ -27,6 +27,14 @@ const accountSnapshot = {
   traceId: 'trace-verify',
 }
 
+const atmSessionOk = {
+  success: true,
+  data: { accountId: 'acc-1', holderName: 'Alice', maskedCardNumber: '•••• •••• •••• 6467', passkeyEnrolled: true },
+  error: null,
+  timestamp: '2026-06-08T10:00:00Z',
+  traceId: 'trace-session',
+}
+
 const withdrawalTx = {
   success: true,
   data: {
@@ -68,6 +76,9 @@ test('happy path: auto-submit card → auto-verify PIN → withdraw → receipt'
   // Two-phase auth: GET .../cards/{n} is the greeting lookup, POST .../pin verifies.
   // Playwright matches the most-recently-registered route first, so register the more
   // specific `/pin` route LAST to ensure it wins over the broader `/cards/*` matcher.
+  await page.route('**/api/v1/atm/session', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(atmSessionOk) }),
+  )
   await page.route('**/api/v1/cards/*', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cardSummary) }),
   )
@@ -105,6 +116,9 @@ test('happy path: auto-submit card → auto-verify PIN → withdraw → receipt'
 })
 
 test('app bar + statement pagination: back to menu, page through statement', async ({ page }) => {
+  await page.route('**/api/v1/atm/session', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(atmSessionOk) }),
+  )
   await page.route('**/api/v1/cards/*', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cardSummary) }),
   )
@@ -135,14 +149,17 @@ test('app bar + statement pagination: back to menu, page through statement', asy
   const outline = await page.evaluate(() => getComputedStyle(document.activeElement!).outlineStyle)
   expect(outline).toBe('solid')
 
-  // Withdraw: Available banner, then app-bar Back returns to the menu.
+  // Withdraw: Available banner, then jump straight to the Statement via the title menu.
   await page.getByRole('button', { name: /Withdraw|Bvisa mari/i }).click()
   await expect(page).toHaveURL(/\/withdraw$/)
   await expect(page.getByText(/Available|Mari inowanikwa/i)).toBeVisible()
+  await page.locator('header').getByRole('button', { name: /Withdraw|Bvisa mari/i }).click()
+  await page.getByRole('menuitem', { name: /Mini-statement|Chitsauko/i }).click()
+  await expect(page).toHaveURL(/\/statement$/)
+
+  // App-bar Back still returns to the menu, then re-enter the statement.
   await page.getByRole('button', { name: /Back|Dzokera/i }).click()
   await expect(page).toHaveURL(/\/menu$/)
-
-  // Statement: Prev disabled on page 1, Next flips to page 2.
   await page.getByRole('button', { name: /Mini-statement|Chitsauko/i }).click()
   await expect(page).toHaveURL(/\/statement$/)
   await expect(page.getByText('Page 1 of 2')).toBeVisible()

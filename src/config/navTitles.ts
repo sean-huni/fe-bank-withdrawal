@@ -14,6 +14,9 @@ const TITLES: Record<string, NavTitle> = {
   '/receipt': { emoji: '✅', key: 'receipt', noBack: true },
 }
 
+/** Destinations offered by the cross-screen NavMenu, in display order. */
+export const NAV_DESTINATIONS = ['/balance', '/withdraw', '/deposit', '/statement'] as const
+
 export function navTitle(pathname: string): NavTitle {
   return TITLES[pathname] ?? MENU_FALLBACK
 }

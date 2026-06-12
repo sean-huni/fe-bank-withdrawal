@@ -98,4 +98,15 @@ describe('Statement pagination', () => {
     await screen.findByText(/Jun/)
     expect(screen.queryByRole('button', { name: /next/i })).not.toBeInTheDocument()
   })
+
+  it('shows a truncated tx-id per row with the full id on hover', async () => {
+    const fullId = 'f3b9c2d8-7e4a-4f1b-9c6d-000000000001'
+    vi.spyOn(atm, 'statement').mockResolvedValue({
+      content: [{ ...tx('ignored'), transactionId: fullId }],
+      page: { size: 10, number: 0, totalElements: 1, totalPages: 1 },
+    })
+    renderStatement()
+    const shortId = await screen.findByText('#f3b9c2d8')
+    expect(shortId).toHaveAttribute('title', fullId)
+  })
 })
