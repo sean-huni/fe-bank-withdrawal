@@ -76,7 +76,7 @@ with
 
 - [ ] **Step 5: Run tests + gates**
 
-Run: `npm run test -- navTitles` → PASS (4 tests). `npm run typecheck`, `npm run lint` → clean.
+Run: `npm run test -- navTitles` → PASS (3 tests). `npm run typecheck`, `npm run lint` → clean.
 
 - [ ] **Step 6: Commit**
 
