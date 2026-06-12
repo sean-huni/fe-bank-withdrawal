@@ -7,13 +7,23 @@ import type { Transaction } from '../api/types'
 
 const dateFmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
+/** First 8 chars — enough to correlate with back-office records without wrecking the row. */
+function shortTxId(id: string): string {
+  return `#${id.slice(0, 8)}`
+}
+
 function Row({ tx, currency }: { tx: Transaction; currency: string }) {
   const emoji = tx.type === 'DEBIT' ? '💸' : '💵'
   return (
     <li className="glass p-3 flex items-center justify-between text-sm">
       <span className="flex items-center gap-2">
         <span className="text-lg">{emoji}</span>
-        <span className="text-slate-400">{dateFmt.format(new Date(tx.occurredAt))}</span>
+        <span>
+          <span className="block text-slate-400">{dateFmt.format(new Date(tx.occurredAt))}</span>
+          <span className="block font-mono text-[10px] text-slate-500" title={tx.transactionId}>
+            {shortTxId(tx.transactionId)}
+          </span>
+        </span>
       </span>
       <span className="text-right">
         <span className={tx.type === 'DEBIT' ? 'text-rose-300' : 'text-emerald-300'}>

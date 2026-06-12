@@ -80,10 +80,10 @@ describe('card shell', () => {
   })
 
   it('keeps the timeout dialog outside the animated card (transform would clip the fixed overlay)', () => {
-    const { container } = renderLayout()
+    renderLayout()
     act(() => vi.advanceTimersByTime(45_000))
-    const section = container.querySelector('section')
+    const section = screen.getByRole('region', { name: /atm/i })
     const dialog = screen.getByRole('alertdialog')
-    expect(section!.contains(dialog)).toBe(false)
+    expect(section.contains(dialog)).toBe(false)
   })
 })
