@@ -12,16 +12,15 @@ const ALICE = '4539148803436467'
 test('@live balance inquiry and a small deposit against the real backend', async ({ page }) => {
   await page.goto('/')
 
-  // Sign in with the seeded card.
+  // Sign in with the seeded card — a valid Luhn number auto-submits (no Insert click).
   await page.getByPlaceholder('#### #### #### ####').fill(ALICE)
-  await page.getByRole('button', { name: /Insert card/i }).click()
   await expect(page).toHaveURL(/\/pin$/)
 
-  // Cosmetic PIN.
+  // Server-verified PIN — the 4th digit auto-verifies (no Enter click). Without a
+  // platform authenticator the enable-passkey interstitial never shows.
   for (const d of ['1', '2', '3', '4']) {
     await page.getByRole('button', { name: d, exact: true }).click()
   }
-  await page.getByRole('button', { name: /Enter/i }).click()
   await expect(page).toHaveURL(/\/menu$/)
 
   // Balance inquiry shows a currency-formatted amount.

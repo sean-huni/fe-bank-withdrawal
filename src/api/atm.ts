@@ -1,8 +1,13 @@
 import { api } from './client'
-import type { AccountSnapshot, ApiResponse, Page, Transaction } from './types'
+import type { AccountSnapshot, ApiResponse, CardSummary, Page, Transaction } from './types'
 
-export async function lookupCard(cardNumber: string): Promise<AccountSnapshot> {
-  const { data } = await api.get<ApiResponse<AccountSnapshot>>(`/cards/${cardNumber}`)
+export async function lookupCard(cardNumber: string): Promise<CardSummary> {
+  const { data } = await api.get<ApiResponse<CardSummary>>(`/cards/${cardNumber}`)
+  return data.data as CardSummary
+}
+
+export async function verifyPin(cardNumber: string, pin: string): Promise<AccountSnapshot> {
+  const { data } = await api.post<ApiResponse<AccountSnapshot>>(`/cards/${cardNumber}/pin`, { pin })
   return data.data as AccountSnapshot
 }
 

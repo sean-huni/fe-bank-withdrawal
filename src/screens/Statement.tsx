@@ -1,13 +1,16 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { Money } from '../components/Money'
+import { Pager } from '../components/Pager'
 import { useStatement } from '../hooks/useStatement'
 import { useSessionStore } from '../stores/sessionStore'
 import type { Transaction } from '../api/types'
-import { useT } from '../i18n/strings'
 
 const dateFmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+
+/** First 8 chars — enough to correlate with back-office records without wrecking the row. */
+function shortTxId(id: string): string {
+  return `#${id.slice(0, 8)}`
+}
 
 function Row({ tx, currency }: { tx: Transaction; currency: string }) {
   const emoji = tx.type === 'DEBIT' ? '💸' : '💵'
@@ -15,7 +18,12 @@ function Row({ tx, currency }: { tx: Transaction; currency: string }) {
     <li className="glass p-3 flex items-center justify-between text-sm">
       <span className="flex items-center gap-2">
         <span className="text-lg">{emoji}</span>
-        <span className="text-slate-400">{dateFmt.format(new Date(tx.occurredAt))}</span>
+        <span>
+          <span className="block text-slate-400">{dateFmt.format(new Date(tx.occurredAt))}</span>
+          <span className="block font-mono text-[10px] text-slate-500" title={tx.transactionId}>
+            {shortTxId(tx.transactionId)}
+          </span>
+        </span>
       </span>
       <span className="text-right">
         <span className={tx.type === 'DEBIT' ? 'text-rose-300' : 'text-emerald-300'}>
@@ -31,18 +39,16 @@ function Row({ tx, currency }: { tx: Transaction; currency: string }) {
 }
 
 export function Statement() {
-  const t = useT()
-  const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)
   const currency = account?.currency ?? 'EUR'
   const [page, setPage] = useState(0)
-  const { data, isLoading } = useStatement(account?.accountId ?? null, page)
+  const { data, isLoading, isPlaceholderData } = useStatement(account?.accountId ?? null, page)
 
   const rows = data?.content ?? []
-  const hasMore = data ? data.page.number + 1 < data.page.totalPages : false
+  const totalPages = data?.page.totalPages ?? 0
 
   return (
-    <ScreenFrame title={`🧾 ${t('statement')}`}>
+    <>
       {isLoading && rows.length === 0 ? (
         <p className="text-slate-400">Loading…</p>
       ) : rows.length === 0 ? (
@@ -54,23 +60,9 @@ export function Statement() {
           ))}
         </ul>
       )}
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        <button
-          type="button"
-          onClick={() => navigate('/menu')}
-          className="glass p-4 font-display active:scale-95 transition"
-        >
-          ◀ {t('cancel')}
-        </button>
-        <button
-          type="button"
-          disabled={!hasMore}
-          onClick={() => setPage((p) => p + 1)}
-          className="glass p-4 font-display active:scale-95 transition disabled:opacity-40"
-        >
-          More ▼
-        </button>
-      </div>
-    </ScreenFrame>
+      {totalPages > 1 && (
+        <Pager page={page} totalPages={totalPages} onPage={setPage} disabled={isPlaceholderData} />
+      )}
+    </>
   )
 }

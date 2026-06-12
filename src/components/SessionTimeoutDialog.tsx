@@ -1,0 +1,35 @@
+import { useT } from '../i18n/strings'
+
+/**
+ * Idle-session warning. The Continue button resets the timer explicitly via
+ * `onContinue`; other user interactions still reset it via the window listeners
+ * registered in `useSessionTimeout`.
+ */
+export function SessionTimeoutDialog({
+  secondsLeft,
+  onContinue,
+}: {
+  secondsLeft: number | null
+  onContinue: () => void
+}) {
+  const t = useT()
+  if (secondsLeft === null) return null
+  return (
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="session-timeout-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-surface-950/70 p-4"
+    >
+      <div className="glass p-6 w-full max-w-xs text-center">
+        <p id="session-timeout-title" className="font-display text-lg mb-1">⏳ {t('timeoutTitle')}</p>
+        <p className="text-slate-400 text-sm mb-4">
+          {t('timeoutBody').replace('{secs}', String(secondsLeft))}
+        </p>
+        <button autoFocus type="button" onClick={onContinue} className="glass w-full p-3 text-accent-cyan font-display active:scale-95 transition">
+          {t('continue')}
+        </button>
+      </div>
+    </div>
+  )
+}

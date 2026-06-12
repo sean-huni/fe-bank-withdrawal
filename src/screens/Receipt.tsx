@@ -1,6 +1,4 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { Money } from '../components/Money'
 import { useSessionStore } from '../stores/sessionStore'
 import type { Transaction } from '../api/types'
@@ -14,7 +12,6 @@ export function Receipt() {
   const t = useT()
   const navigate = useNavigate()
   const account = useSessionStore((s) => s.account)
-  const signOut = useSessionStore((s) => s.signOut)
   const state = useLocation().state as ReceiptState | null
 
   // Direct navigation without a transaction — bounce to the menu.
@@ -25,7 +22,8 @@ export function Receipt() {
   const verb = kind === 'withdraw' ? t('withdraw') : t('deposit')
 
   return (
-    <ScreenFrame title={`✅ ${verb}`}>
+    <>
+      <h2 className="font-display text-2xl text-center mb-2">✅ {verb}</h2>
       <div className="text-center py-2">
         <p className="font-display text-4xl text-accent-cyan mb-2">
           <Money amount={tx.amount} currency={currency} />
@@ -44,26 +42,13 @@ export function Receipt() {
           <dd>{timeFmt.format(new Date(tx.occurredAt))}</dd>
         </div>
       </dl>
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        <button
-          type="button"
-          onClick={() => navigate('/menu')}
-          className="glass p-4 text-accent-cyan font-display active:scale-95 transition"
-        >
-          🔁 {t('another')}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            signOut()
-            toast(`💳 ${t('takeCard')}`)
-            navigate('/')
-          }}
-          className="glass p-4 font-display active:scale-95 transition"
-        >
-          🚪 {t('exit')}
-        </button>
-      </div>
-    </ScreenFrame>
+      <button
+        type="button"
+        onClick={() => navigate('/menu')}
+        className="glass w-full p-4 mt-6 text-accent-cyan font-display active:scale-95 transition"
+      >
+        🔁 {t('another')}
+      </button>
+    </>
   )
 }

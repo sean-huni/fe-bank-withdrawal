@@ -17,6 +17,10 @@ export interface AccountSnapshot {
   balance: string
   currency: string
 }
+export interface CardSummary {
+  holderName: string
+  maskedCardNumber: string
+}
 export type TransactionType = 'DEBIT' | 'CREDIT'
 export interface Transaction {
   transactionId: string
