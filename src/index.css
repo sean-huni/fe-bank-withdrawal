@@ -15,3 +15,4 @@
 body { @apply bg-surface-950 text-slate-100 font-sans; }
 .glass { @apply bg-surface-800/50 backdrop-blur-xl border border-surface-700/50 rounded-2xl; }
 :focus-visible { outline: 2px solid var(--color-accent-cyan); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }

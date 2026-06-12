@@ -73,11 +73,10 @@ describe('session-timeout warning', () => {
 
 describe('card shell', () => {
   it('renders the app-bar header and screen content inside one card section', () => {
-    const { container } = renderLayout()
-    const section = container.querySelector('section')
-    expect(section).not.toBeNull()
-    expect(section!.querySelector('header')).not.toBeNull()
-    expect(section!.textContent).toContain('menu-screen')
+    renderLayout()
+    const section = screen.getByRole('region', { name: /atm/i })
+    expect(section.querySelector('header')).not.toBeNull()
+    expect(section).toHaveTextContent('menu-screen')
   })
 
   it('keeps the timeout dialog outside the animated card (transform would clip the fixed overlay)', () => {

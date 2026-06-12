@@ -1,5 +1,4 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { Money } from '../components/Money'
 import { useSessionStore } from '../stores/sessionStore'
 import type { Transaction } from '../api/types'
@@ -25,7 +24,7 @@ export function Receipt() {
   const verb = kind === 'withdraw' ? t('withdraw') : t('deposit')
 
   return (
-    <ScreenFrame>
+    <>
       <h2 className="font-display text-2xl text-center mb-2">✅ {verb}</h2>
       <div className="text-center py-2">
         <p className="font-display text-4xl text-accent-cyan mb-2">
@@ -61,6 +60,6 @@ export function Receipt() {
           🚪 {t('exit')}
         </button>
       </div>
-    </ScreenFrame>
+    </>
   )
 }

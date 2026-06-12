@@ -9,7 +9,7 @@ const DICT = {
     exit: 'End session', confirm: 'Confirm', cancel: 'Cancel', another: 'Another transaction',
     takeCard: 'Please take your card', amount: 'Amount', yourCards: 'Your cards',
     // Navigation / app bar
-    back: 'Back', menu: 'Menu', receipt: 'Receipt',
+    back: 'Back', menu: 'Menu', receipt: 'Receipt', atm: 'ATM',
     // Withdraw balance card + quick-cash guard
     available: 'Available', overBalance: 'Over balance',
     // Statement pager
@@ -38,7 +38,7 @@ const DICT = {
     exit: 'Pedza', confirm: 'Simbisa', cancel: 'Kanzura', another: 'Imwe basa',
     takeCard: 'Tora kadhi rako', amount: 'Mari', yourCards: 'Makadhi ako',
     // Navigation / app bar — TODO(sn): review translation
-    back: 'Dzokera', menu: 'Menyu', receipt: 'Risiti',
+    back: 'Dzokera', menu: 'Menyu', receipt: 'Risiti', atm: 'ATM',
     // Withdraw balance card + quick-cash guard — TODO(sn): review translation
     available: 'Mari inowanikwa', overBalance: 'Inopfuura mari iripo',
     // Statement pager — TODO(sn): review translation

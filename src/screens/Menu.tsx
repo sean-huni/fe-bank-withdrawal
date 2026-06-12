@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { useSessionStore } from '../stores/sessionStore'
 import { useT } from '../i18n/strings'
 
@@ -16,7 +15,7 @@ export function Menu() {
   ]
 
   return (
-    <ScreenFrame>
+    <>
       <h2 className="font-display text-2xl sm:text-3xl mb-5">👋 {account?.holderName ?? ''}</h2>
       <div className="grid grid-cols-2 gap-3">
         {actions.map((a) => (
@@ -31,6 +30,6 @@ export function Menu() {
           </button>
         ))}
       </div>
-    </ScreenFrame>
+    </>
   )
 }

@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { Money } from '../components/Money'
 import { useSessionStore } from '../stores/sessionStore'
 import { atmMetrics } from '../telemetry'
@@ -19,7 +18,7 @@ export function Balance() {
   if (!account) return <Navigate to="/" replace />
 
   return (
-    <ScreenFrame>
+    <>
       <div className="text-center py-4">
         <p className="text-slate-400">{account.holderName}</p>
         <p className="font-mono text-slate-500 text-sm mb-4">{account.maskedCardNumber}</p>
@@ -34,6 +33,6 @@ export function Balance() {
       >
         💸 {t('withdraw')}
       </button>
-    </ScreenFrame>
+    </>
   )
 }

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { ScreenFrame } from '../components/ScreenFrame'
 import { Money } from '../components/Money'
 import { Pager } from '../components/Pager'
 import { useStatement } from '../hooks/useStatement'
@@ -39,7 +38,7 @@ export function Statement() {
   const totalPages = data?.page.totalPages ?? 0
 
   return (
-    <ScreenFrame>
+    <>
       {isLoading && rows.length === 0 ? (
         <p className="text-slate-400">Loading…</p>
       ) : rows.length === 0 ? (
@@ -54,6 +53,6 @@ export function Statement() {
       {totalPages > 1 && (
         <Pager page={page} totalPages={totalPages} onPage={setPage} disabled={isPlaceholderData} />
       )}
-    </ScreenFrame>
+    </>
   )
 }
