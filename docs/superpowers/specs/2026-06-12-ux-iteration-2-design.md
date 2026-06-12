@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-12
 **Repo:** `fe-bank-withdrawal` only (frontend; no backend changes)
-**Status:** Approved design, pending implementation plan
+**Status:** Implemented on `JIRA-000-feat-ux-nav-shell` (plan: `2026-06-12-ux-nav-shell.md`)
 **Predecessor:** `2026-06-11-ux-improvements-design.md` (merged to `dev`)
 
 ## Problem
@@ -69,7 +69,8 @@ New `src/components/NavMenu.tsx`, rendered by `AppBar` in the title slot:
   (the file already owns route → emoji/key/noBack; no second route list anywhere).
 - Current route's item gets `aria-current="page"` + highlight; clicking it just closes.
 - Close on: item navigation, Escape, click outside. Focus returns to the trigger on
-  close. Plain controlled React state (no Popover API).
+  Escape; after item navigation the route-keyed shell remounts and focus resets — accepted
+  for this touch-first kiosk. Plain controlled React state (no Popover API).
 - Available on every authenticated screen, including Receipt and Menu.
 
 Back/Exit behavior is unchanged (Back → `/menu`, hidden via `noBack`; Exit →
@@ -128,4 +129,19 @@ not a failure mode (routes are static).
 
 - Backend changes; statement error-state redesign (pre-existing gap, still tracked);
   focus trap in the timeout dialog; Shona translation review (TODO(sn) markers remain);
-  tap-to-expand full tx-id on rows (YAGNI until asked).
+  tap-to-expand full tx-id on rows (YAGNI until asked); APG roving-focus/arrow-key
+  navigation in the NavMenu (`role="menu"` with the omission documented in-code —
+  touch-first kiosk, four items).
+
+## Execution notes (post-completion)
+
+Shipped beyond the sections above, found during the screenshot DoD gate:
+
+- Pin's session-bootstrap failure toast claimed "Passkey registration failed" with a
+  doubled warning icon; now the honest `passkeySetupUnavailable` key (en + sn draft),
+  single icon, covered by a Pin regression test. `POST /atm/session` is mocked in both
+  e2e specs (it was unmocked, firing the toast into every capture).
+- `prefers-reduced-motion` support: CSS duration/iteration overrides in `index.css` plus
+  `<MotionConfig reducedMotion="user">` so framer-motion's JS-driven shell fade honors
+  the preference too.
+- The card shell is a labelled `region` landmark (`atm` i18n key).
